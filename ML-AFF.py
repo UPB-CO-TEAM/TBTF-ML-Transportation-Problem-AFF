@@ -2,7 +2,7 @@
 # PE SCURT CE AM FACUT AICI:
 # 1. Am folosit Machine Learning sa ghicim cererea in 2026.
 # 2. Am pus datele in graful de transport.
-# 3. Aplicam Ford-Fulkerson incepand cu Iteratia 0 (fluxul "din ochi" pe cele 3 ramuri: margine, mijloc, margine).
+# 3. Aplicam Ford-Fulkerson incepand cu Iteratia 0 (fluxul initial pe cele 3 ramuri majore).
 # 4. Continuam cu Procedura de Etichetare (PE) pentru iteratiile 1, 2, etc.
 # 5. Dovedim prabusirea retelei la scaderea capacitatii NVIDIA (Too Big to Fail).
 # ==============================================================================
@@ -17,7 +17,7 @@ from sklearn.ensemble import RandomForestRegressor
 # ==============================================================================
 # CONFIGURARE PAGINA SI DESIGN
 # ==============================================================================
-st.set_page_config(page_title="Paradigma Too Big to Fail", layout="wide", page_icon="💻")
+st.set_page_config(page_title="Paradigma Too Big to Fail", layout="wide", page_icon="📈")
 
 st.markdown("""
     <style>
@@ -28,7 +28,7 @@ st.markdown("""
     .authors-box { color: #1565c0; text-align: right; font-family: 'Segoe UI', sans-serif; margin-bottom: 30px; font-size: 18px; }
     .authors-title { color: #0d47a1; font-weight: bold; font-size: 20px; margin-bottom: 5px; }
     
-    .info-box { background-color: #fff3e0; border-left: 5px solid #ff9800; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #333;}
+    .info-box { background-color: #f8f9fa; border-left: 5px solid #1976d2; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #333;}
     .validation-box { background-color: #ffebee; border-left: 5px solid #c62828; padding: 15px; margin-top: 20px; border-radius: 5px; color: #333; }
     </style>
 """, unsafe_allow_html=True)
@@ -148,7 +148,7 @@ def deseneaza_graf_ecosistem(arce_df, istoric_fluxuri, is_initial=False, bottlen
     return graf
 
 # ==============================================================================
-# LOGICA MATEMATICA: FORD-FULKERSON + ITERATIA 0 (Din ochi)
+# LOGICA MATEMATICA: FORD-FULKERSON + ITERATIA 0 
 # ==============================================================================
 def executa_ford_fulkerson(df_arce, sursa, dest):
     df = df_arce.copy()
@@ -161,8 +161,7 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
     mu_idx = 1 
     
     # --------------------------------------------------------------------------
-    # FAZA I_0: Fluxul initial (margine, mijloc, margine) conform seminarului
-    # Cautam 3 cai obligatorii: pe sus (Nvidia = x1), mijloc (AMD = x2), jos (Intel = x3)
+    # FAZA I_0: Fluxul initial (margine, mijloc, margine)
     # --------------------------------------------------------------------------
     paths_I0 =[]
     
@@ -201,7 +200,7 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
                 nod = p
             lant.reverse()
             
-            # Calculam minimul pe drumul asta "din ochi"
+            # Calculam minimul pe drumul asta initial
             valori_min = [df[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].iloc[0]['Capacitate c(u)'] - df[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].iloc[0]['Flux f(u)'] for u, v, _ in lant]
             min_mu = min(valori_min)
             
@@ -345,21 +344,21 @@ st.markdown('''
     </div>
 ''', unsafe_allow_html=True)
 
-st.markdown("### 🧠 Pe scurt, ce am făcut în acest proiect:")
+st.markdown("### Rezumatul Abordării Metodologice")
 st.markdown("""
 <div class="info-box">
-Am combinat o problemă clasică de matematică cu Inteligența Artificială.<br><br>
-<b>1.</b> Am folosit ML (algoritmul Random Forest) ca să prezicem ce cerere de cipuri va fi în anul 2026.<br>
-<b>2.</b> Am introdus aceste numere într-o rețea de transport (un graf matematic).<br>
-<b>3.</b> Am aplicat algoritmul Ford-Fulkerson să vedem dacă piața poate onora această cerere.<br>
-<b>4.</b> Am demonstrat matematic că, dacă NVIDIA pică (îi scădem capacitatea), restul concurenței nu poate compensa, iar rețeaua se blochează. Asta confirmă că NVIDIA e o entitate de tip <i>Too Big to Fail</i>.<br><br>
-<b>Ce este Random Forest?</b><br>
-În loc să încerce să ghicească el singur, algoritmul ăsta creează practic 100 de "experți" diferiți (arbori de decizie) care analizează trecutul, după care face media părerilor lor ca să fie super precis.
+Prezenta lucrare propune o arhitectură hibridă pentru analiza riscului în ecosistemul hardware global, structurată astfel:<br><br>
+<b>1.</b> Integrarea unui model de <b>Machine Learning (Random Forest)</b> pentru a previziona cererea de putere de calcul (GPU) aferentă anului 2026.<br>
+<b>2.</b> Modelarea rețelei globale de distribuție sub forma unui graf orientat, unde cerințele nodurilor destinație sunt ajustate dinamic pe baza predicțiilor algoritmului ML.<br>
+<b>3.</b> Aplicarea algoritmului de optimizare <b>Ford-Fulkerson</b> pentru a evalua capacitatea rețelei de a satisface cererea estimată.<br>
+<b>4.</b> Simularea unui colaps structural (scăderea capacității NVIDIA) pentru a demonstra matematic incapacitatea concurenței de a suplini deficitul de calcul, validând astfel încadrarea companiei în paradigma <i>Too Big to Fail</i>.<br><br>
+<b>De ce am utilizat algoritmul Random Forest?</b><br>
+Acest model ansamblează deciziile a numeroși arbori de regresie independenți (în acest caz, 100 de arbori). Prin agregarea rezultatelor istorice, modelul reduce variația și oferă o predicție mult mai robustă a cererii viitoare, esențială pentru parametrizarea corectă a rețelei matematice.
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("### Componenta Predictivă (Machine Learning)")
-st.write("Modelul AI a calculat că pentru anul 2026 vom avea nevoile de mai jos pe cele 5 piețe mari:")
+st.markdown("### 1. Componenta Predictivă (Machine Learning)")
+st.write("Modelul algoritmic a generat următoarele previziuni privind cererea de componente GPU pentru anul 2026, distribuite pe cele 5 piețe globale majore:")
 
 predictii_cerere = antreneaza_model_ml()
 cerere_totala = sum(predictii_cerere)
@@ -371,10 +370,10 @@ col_ml3.metric("Piața APAC ($x_6$)", f"{predictii_cerere[2]} unități")
 col_ml4.metric("Piața ME ($x_7$)", f"{predictii_cerere[3]} unități")
 col_ml5.metric("Piața SA ($x_8$)", f"{predictii_cerere[4]} unități")
 
-st.info(f"**Cerere Totală Previzionată (2026):** {cerere_totala} unități. Algoritmul Ford-Fulkerson va încerca să o satisfacă.")
+st.info(f"**Cerere Totală Previzionată (2026):** {cerere_totala} unități de calcul. Această valoare reprezintă ținta de flux pe care algoritmul Ford-Fulkerson va încerca să o optimizeze în cadrul rețelei.")
 
-st.markdown("### Generarea Modelului Degenerat (Simularea Crizei)")
-st.write("Aici putem regla capacitatea de producție a fabricilor. Jucați-vă cu sliderele! Trageți de slider-ul NVIDIA mult în jos ca să vedeți cum pică piața.")
+st.markdown("### 2. Parametrizarea Modelului (Simularea Șocului Sistemic)")
+st.write("Prin intermediul controalelor de mai jos, se poate ajusta capacitatea de producție a actorilor principali din piață. Pentru a simula declanșarea crizei sistemice și a testa reziliența rețelei, reduceți semnificativ capacitatea alocată nodului NVIDIA.")
 
 col_s1, col_s2, col_s3 = st.columns(3)
 with col_s1: cap_nvidia = st.slider("Capacitate NVIDIA ($x_1$)", min_value=0, max_value=300, value=80, step=10)
@@ -395,23 +394,23 @@ date_retea = [
 
 df_retea = pd.DataFrame(date_retea, columns=["Start (x_i)", "Destinație (x_j)", "Capacitate c(u)"])
 
-st.markdown("#### Cum arată rețeaua înainte de a porni algoritmul")
+st.markdown("#### Reprezentarea Topologică a Rețelei Inițiale")
 istoric_initial = {(int(r['Start (x_i)']), int(r['Destinație (x_j)'])):[] for _, r in df_retea.iterrows()}
 st.graphviz_chart(deseneaza_graf_ecosistem(df_retea, istoric_initial, is_initial=True), use_container_width=True)
 
-if st.button("Execută Ford-Fulkerson pas cu pas", type="primary", use_container_width=True):
+if st.button("Execută Algoritmul Ford-Fulkerson", type="primary", use_container_width=True):
     istoric, df_final, flux_final = executa_ford_fulkerson(df_retea, sursa=0, dest=9)
     flux_maxim = istoric[-1]['phi_curent']
     
     st.divider()
-    st.markdown("### Rezolvarea Analitică Matematică")
+    st.markdown("### Rezolvarea Analitică a Algoritmului")
     
     for pas in istoric:
         
-        # Aici este I_0 adaugat special pentru voi!
+        # Etapa de intializare
         if pas['status'] == 'I0':
-            with st.expander("Iterația $\mathcal{I}_0$ - Determinarea fluxului inițial din ochi (margine, mijloc, margine)", expanded=True):
-                st.write("Așa cum am învățat la seminar, determinăm fluxul inițial $\\varphi_0$ prin găsirea directă a celor 3 rute (NVIDIA, AMD, Intel):")
+            with st.expander("Iterația $\mathcal{I}_0$ - Inițializarea Fluxului", expanded=True):
+                st.write("În această etapă, determinăm fluxul inițial $\\varphi_0$ prin identificarea analitică a celor 3 trasee directe majore (prin NVIDIA, AMD și Intel):")
                 sum_str =[]
                 for p in pas['paths']:
                     lant_str = f"x_0"
@@ -424,11 +423,11 @@ if st.button("Execută Ford-Fulkerson pas cu pas", type="primary", use_container
                 if sum_str:
                     st.latex(r"\varphi_0 = " + " + ".join(sum_str) + " = " + fmt(pas['phi_curent']))
                 else:
-                    st.latex(r"\varphi_0 = 0 \text{ (Toate căile sunt blocate)}")
+                    st.latex(r"\varphi_0 = 0 \text{ (Rutele principale sunt saturate)}")
                     
                 st.graphviz_chart(deseneaza_graf_ecosistem(pas['df_stare'], pas['istoric_fluxuri'], is_initial=False), use_container_width=True)
 
-        # Aici e Procedura de Etichetare normala (I1, I2, etc)
+        # Procedura de Etichetare
         elif pas['status'] == 'CONTINUA':
             with st.expander(f"Iterația $\mathcal{{I}}_{{{pas['iteratie']}}}$ - Procedura de Etichetare (PE)", expanded=False):
                 str_etichete = ", ".join([f"x_{{{int(n)}}}: \text{{{lbl[0]}}}" for n, lbl in pas['etichete'].items()])
@@ -450,36 +449,36 @@ if st.button("Execută Ford-Fulkerson pas cu pas", type="primary", use_container
                 st.graphviz_chart(deseneaza_graf_ecosistem(pas['df_stare'], pas['istoric_fluxuri'], etichete_noduri=pas['etichete'], lant_curent=pas['lant']), use_container_width=True)
                 
         else:
-            with st.expander(f"Iterația $\mathcal{{I}}_{{STOP}}$", expanded=True):
+            with st.expander(f"Iterația $\mathcal{{I}}_{{STOP}}$ - Testul de Optimalitate", expanded=True):
                 str_etichete = ", ".join([f"x_{{{int(n)}}}: \text{{{lbl[0]}}}" for n, lbl in pas['etichete'].items()])
                 st.latex(r"\{ " + str_etichete + r" \}")
-                st.warning(f"**Testul de Optimalitate $TO(\mathcal{{I}}_{{STOP}})$**: Procedura a dat greș, nu mai poate ajunge la Destinație. Algoritmul s-a oprit la $\\varphi_{{max}} = {fmt(pas['phi_curent'])}$.")
+                st.warning(f"**Testul de Optimalitate $TO(\mathcal{{I}}_{{STOP}})$:** Procedura de etichetare nu a putut atinge nodul Destinație ($x_9$). Rețeaua a atins starea de saturație, iar algoritmul converge la valoarea maximă a fluxului: $\\varphi_{{max}} = {fmt(pas['phi_curent'])}$.")
 
     st.divider()
-    st.markdown("### Analiza și Concluzia Finală")
+    st.markdown("### 3. Analiza Comparativă și Concluzii")
     
     deficit = cerere_totala - flux_maxim
     
     col_r1, col_r2, col_r3 = st.columns(3)
-    col_r1.metric("Cerere Globală (Calculată cu ML)", f"{cerere_totala}")
-    col_r2.metric("Flux Maxim Livrat (Ford-Fulkerson)", f"{flux_maxim}")
+    col_r1.metric("Cerere Globală Previzionată (ML)", f"{cerere_totala}")
+    col_r2.metric("Flux Maxim Livrat (Optimizare)", f"{flux_maxim}")
     
     if deficit > 0:
-        col_r3.metric("Deficit Neacoperit", f"{deficit}", delta="- Criză!", delta_color="inverse")
+        col_r3.metric("Deficit Structural Neacoperit", f"{deficit}", delta="- Criză Sistemică", delta_color="inverse")
     else:
-        col_r3.metric("Deficit Neacoperit", "0", delta="Totul e bine", delta_color="normal")
+        col_r3.metric("Deficit Structural Neacoperit", "0", delta="Stare de Echilibru", delta_color="normal")
 
-    st.markdown("#### Graful Final (Identificarea Bottleneck-ului)")
-    st.write("Săgețile roșii arată pe unde s-a blocat rețeaua (capacitatea e la maxim).")
+    st.markdown("#### Identificarea Punctelor de Gâtuire (Bottlenecks)")
+    st.write("Muchiile evidențiate cu **roșu îngroșat** reprezintă segmentele saturate ($f(u) = c(u)$) care plafonează distribuția fluxului la nivelul întregii rețele.")
     
     st.graphviz_chart(deseneaza_graf_ecosistem(df_final, flux_final, is_initial=False, bottleneck_nodes=True), use_container_width=True)
     
     if deficit > 0:
         st.markdown(f"""
         <div class='validation-box'>
-            <b>Am demonstrat conceptul de "Too Big to Fail":</b><br>
-            Din cauza faptului că NVIDIA nu a putut livra, toată rețeaua s-a prăbușit. Chiar dacă am încercat să împingem flux pe la concurență, muchiile spre AMD și Intel s-au blocat instantaneu. Dovedim astfel în mod matematic că piața actuală este absolut dependentă de un singur nod!
+            <b>Validarea Ipotezei "Too Big to Fail":</b><br>
+            Modelul confirmă incapacitatea rețelei de a acoperi cererea globală atunci când capacitatea NVIDIA este diminuată. Încercarea algoritmului de a redirecționa fluxul prin companiile concurente (AMD, Intel) a condus la saturarea instantanee a acestor rute alternative, demonstrând limitările lor stricte de producție. Din punct de vedere structural, s-a dovedit analitic faptul că ecosistemul global este critic dependent de performanța unui singur nod (Single Point of Failure).
         </div>
         """, unsafe_allow_html=True)
     else:
-        st.success("**Echilibru!** Oferta bate cererea, nu avem nicio problemă pe piață momentan.")
+        st.success("**Stare de Echilibru Sustenabil:** Oferta agregată a producătorilor acoperă integral cererea previzionată. Rețeaua se află în regim normal de funcționare (Scenariul Nedegenerat).")

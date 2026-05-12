@@ -1,27 +1,24 @@
-# ==============================================================================
-# PE SCURT CE AM FACUT AICI (Ideea proiectului):
-# 1. Am folosit Machine Learning (Random Forest) ca sa ghicim ce cerere de placi video va fi in 2026.
-# 2. Am pus aceste cereri prezise intr-o retea de transport (un graf cu noduri si sageti).
-# 3. Am folosit algoritmul matematic Ford-Fulkerson sa vedem daca fabricile pot acoperi cererea asta.
-# 4. Am aratat ca daca Nvidia are o problema (ii scadem capacitatea din slider), restul nu pot compensa.
-# Astfel, reteaua pica (problema degenereaza) si demonstram matematic conceptul "Too Big to Fail".
+\# ==============================================================================
+# PE SCURT CE AM FACUT AICI:
+# 1. Am folosit Machine Learning sa ghicim cererea in 2026.
+# 2. Am pus datele in graful de transport.
+# 3. Aplicam Ford-Fulkerson incepand cu Iteratia 0 (fluxul "din ochi" pe cele 3 ramuri: margine, mijloc, margine).
+# 4. Continuam cu Procedura de Etichetare (PE) pentru iteratiile 1, 2, etc.
+# 5. Dovedim prabusirea retelei la scaderea capacitatii NVIDIA (Too Big to Fail).
 # ==============================================================================
 
-# Importam librariile de care avem nevoie
-import streamlit as st               # Ne ajuta sa facem interfata web (site-ul)
-import pandas as pd                  # Pentru tabele si baze de date
-import numpy as np                   # Pentru calcule cu numere si array-uri
-import graphviz                      # Cu asta desenam efectiv reteaua aia cu cercuri si sageti
-import random                        # Sa generam culori random pentru iteratii ca sa arate bine
-from sklearn.ensemble import RandomForestRegressor  # Aducem modelul de AI (Padurea Aleatoare)
+import streamlit as st               
+import pandas as pd                  
+import numpy as np                   
+import graphviz                      
+import random                        
+from sklearn.ensemble import RandomForestRegressor  
 
 # ==============================================================================
 # CONFIGURARE PAGINA SI DESIGN
 # ==============================================================================
-# Cum se numeste tab-ul in browser si sa fie pe tot ecranul
 st.set_page_config(page_title="Paradigma Too Big to Fail", layout="wide", page_icon="💻")
 
-# Niste cod de design (CSS) ca sa arate frumos titlurile si cutiile de pe site
 st.markdown("""
     <style>
     .title-box { background-color: #e3f2fd; border-radius: 10px; padding: 25px; text-align: center; margin-bottom: 20px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); }
@@ -37,22 +34,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# FUNCTII MICI CARE NE AJUTA LA AFISARE
+# FUNCTII UTILITARE
 # ==============================================================================
 def fmt(val):
-    # Daca numarul e rotund (ex: 10.0) il face "10" ca sa nu ne umplem de zecimale pe desen
+    # Formateaza numerele, scoate ".0" unde nu e nevoie
     if pd.isna(val): return "0"
     return str(int(val)) if float(val).is_integer() else f"{val:.2f}"
 
 def get_random_color():
-    # Alege o culoare la intamplare dintr-o lista
+    # Culoare random pentru etichetele din PE
     culori =['#d62728', '#2ca02c', '#1f77b4', '#9400D3', '#FF8C00', '#008B8B', '#FF1493', '#8A2BE2']
     return random.choice(culori)
 
 def genereaza_eticheta_arc(cap, istoric_flux, is_initial=False):
-    # Formateaza textul de pe sageata (cum am invatat: capacitate = flux1 + flux2 . //)
+    # Scrie formatul matematic pe muchii (ex: 20 = 15 + 5)
     if is_initial: 
-        return f"{fmt(cap)}" # La inceput afisam doar capacitatea maxima, fara plusuri
+        return f"{fmt(cap)}"
     
     if not istoric_flux or sum(istoric_flux) == 0: 
         return f"{fmt(cap)} +"
@@ -60,55 +57,45 @@ def genereaza_eticheta_arc(cap, istoric_flux, is_initial=False):
     flux_curent = sum(istoric_flux)
     str_flux = ""
     
-    # Construim adunarile de flux pe parcursul iteratiilor
     for val in istoric_flux:
         if val == 0: continue
         if val > 0 and len(str_flux) > 0: str_flux += f" + {fmt(val)}"
         elif val > 0 and len(str_flux) == 0: str_flux += f"{fmt(val)}"
         else: str_flux += f" - {fmt(abs(val))}"
         
-    # Daca s-a umplut muchia (a ajuns la maxim), punem punct si barele alea doua de saturare
     if flux_curent >= cap: return f"{fmt(cap)} = {str_flux} .\n //"
     else: return f"{fmt(cap)} = {str_flux} +"
 
 # ==============================================================================
-# PARTEA DE MACHINE LEARNING (PENTRU PREDICTII)
+# MACHINE LEARNING
 # ==============================================================================
-@st.cache_data # Salvam datele in cache sa nu gandeasca modelul de la zero la fiecare click pe site
+@st.cache_data 
 def antreneaza_model_ml():
-    # Cream niste ani de istoric
+    # Creare istoric si antrenare Random Forest
     ani = np.array(range(2018, 2026))
     
-    # Inventam o crestere mare a cererii de cipuri pentru fiecare piata
-    cerere_p1 = np.exp((ani - 2018) * 0.4) * 10  # Piata America de Nord
-    cerere_p2 = np.exp((ani - 2018) * 0.35) * 8  # Piata Europa
-    cerere_p3 = np.exp((ani - 2018) * 0.45) * 12 # Piata Asia
-    cerere_p4 = np.exp((ani - 2018) * 0.25) * 5  # Piata Orientul Mijlociu
-    cerere_p5 = np.exp((ani - 2018) * 0.2) * 4   # Piata America de Sud
+    cerere_p1 = np.exp((ani - 2018) * 0.4) * 10  
+    cerere_p2 = np.exp((ani - 2018) * 0.35) * 8  
+    cerere_p3 = np.exp((ani - 2018) * 0.45) * 12 
+    cerere_p4 = np.exp((ani - 2018) * 0.25) * 5  
+    cerere_p5 = np.exp((ani - 2018) * 0.2) * 4   
     
-    # Astea sunt datele din care invata modelul
     X = ani.reshape(-1, 1)
     y = np.column_stack((cerere_p1, cerere_p2, cerere_p3, cerere_p4, cerere_p5))
     
-    # Facem Padurea Aleatoare cu 100 de arbori decizionali
     model = RandomForestRegressor(n_estimators=100, random_state=42)
-    # Ii dam sa invete din trecut
     model.fit(X, y)
     
-    # Ghicim cererea pentru anul 2026
     predictie_viitor = model.predict([[2026]])[0]
-    
-    # Rotunjim la numere intregi ca nu putem trimite jumatati de placi video
     return np.round(predictie_viitor).astype(int)
 
 # ==============================================================================
-# DESENAREA GRAFULUI (RETEAUA)
+# DESENAREA GRAFULUI
 # ==============================================================================
 def deseneaza_graf_ecosistem(arce_df, istoric_fluxuri, is_initial=False, bottleneck_nodes=None, etichete_noduri=None, lant_curent=None):
     graf = graphviz.Digraph()
-    graf.attr(rankdir='LR', bgcolor='transparent') # Deseneaza de la stanga la dreapta
+    graf.attr(rankdir='LR', bgcolor='transparent') 
     
-    # Dam nume nodurilor pe interfata (AICI PUNEM DIACRITICE)
     nume_noduri = {
         0: "Sursă (x_0)",
         1: "NVIDIA (x_1)", 2: "AMD (x_2)", 3: "Intel (x_3)",
@@ -116,39 +103,32 @@ def deseneaza_graf_ecosistem(arce_df, istoric_fluxuri, is_initial=False, bottlen
         9: "Destinație (x_9)"
     }
     
-    # Fortam nodurile sa stea pe aceeasi coloana verticala
     graf.body.append('{rank=same; "0"}')
     graf.body.append('{rank=same; "1"; "2"; "3"}')
     graf.body.append('{rank=same; "4"; "5"; "6"; "7"; "8"}')
     graf.body.append('{rank=same; "9"}')
     
-    # Setam culorile pentru noduri
     for n_id, n_name in nume_noduri.items():
-        color_fill = '#f8f9fa' # Gri
+        color_fill = '#f8f9fa' 
         
-        # Daca nodul a fost etichetat matematic, ii punem eticheta HTML deasupra
         if etichete_noduri and n_id in etichete_noduri:
             eticheta_text, culoare_eticheta = etichete_noduri[n_id]
             n_name = f"<<TABLE BORDER='0' CELLBORDER='0' CELLSPACING='0'><TR><TD><FONT POINT-SIZE='11' COLOR='{culoare_eticheta}'><B>{eticheta_text}</B></FONT></TD></TR><TR><TD>{n_name}</TD></TR></TABLE>>"
             color_fill = '#e9ecef'
             
-        # Highlight pe Nvidia la final daca pica
         if n_id == 1 and bottleneck_nodes:
-            color_fill = '#ffcccc' # Rosu deschis
+            color_fill = '#ffcccc' 
             
-        # Bagam nodul in desen
         if str(n_name).startswith("<<"):
             graf.node(str(n_id), label=n_name, shape='box', style='filled', fillcolor=color_fill, fontname='Helvetica')
         else:
             graf.node(str(n_id), label=n_name, shape='box', style='filled', fillcolor=color_fill, fontname='Helvetica')
             
-    # Tinem minte pe ce muchii trecem la iteratia curenta ca sa le facem albastre
     muchii_lant = set()
     if lant_curent:
         for u, v, _ in lant_curent:
             muchii_lant.add((int(u), int(v)))
 
-    # Desenam sagetile
     for _, rand in arce_df.iterrows():
         i = int(rand['Start (x_i)'])
         j = int(rand['Destinație (x_j)'])
@@ -158,46 +138,111 @@ def deseneaza_graf_ecosistem(arce_df, istoric_fluxuri, is_initial=False, bottlen
         flux_history = istoric_fluxuri.get((i, j),[])
         label_arc = genereaza_eticheta_arc(c_ij, flux_history, is_initial)
         
-        # Daca sageata face parte din drum, o facem albastra si groasa
         if (i, j) in muchii_lant or (j, i) in muchii_lant:
             graf.edge(str(i), str(j), label=label_arc, color='#1f77b4', penwidth='3.5', fontcolor='#1f77b4', fontname='Helvetica-bold')
-        # Daca sageata s-a umplut, o facem rosie
         elif f_ij >= c_ij and not is_initial:
             graf.edge(str(i), str(j), label=label_arc, color='#d62728', penwidth='2.5', fontcolor='#d62728', fontname='Helvetica-bold')
-        # Altfel o lasam normala
         else:
             graf.edge(str(i), str(j), label=label_arc, color='#868e96', penwidth='1.2', fontcolor='#495057')
             
     return graf
 
 # ==============================================================================
-# LOGICA MATEMATICA: ALGORITMUL FORD-FULKERSON
+# LOGICA MATEMATICA: FORD-FULKERSON + ITERATIA 0 (Din ochi)
 # ==============================================================================
 def executa_ford_fulkerson(df_arce, sursa, dest):
     df = df_arce.copy()
-    df['Flux f(u)'] = 0 # Flux initial e 0
-    istoric =[] # Aici salvam printscreen-uri mentale cu fiecare pas
+    df['Flux f(u)'] = 0 
+    istoric =[] 
     
     istoric_fluxuri = {(int(r['Start (x_i)']), int(r['Destinație (x_j)'])):[] for _, r in df.iterrows()}
     
     phi_total = 0 
-    mu_idx = 1 # Numarul drumului curent
-    iteratie = 1
+    mu_idx = 1 
     
-    # Ne invartim aici pana nu mai gasim drum
+    # --------------------------------------------------------------------------
+    # FAZA I_0: Fluxul initial (margine, mijloc, margine) conform seminarului
+    # Cautam 3 cai obligatorii: pe sus (Nvidia = x1), mijloc (AMD = x2), jos (Intel = x3)
+    # --------------------------------------------------------------------------
+    paths_I0 =[]
+    
+    for nod_producator in [1, 2, 3]:
+        # Facem un BFS ca sa gasim un drum curat din producator spre destinatie
+        coada = [nod_producator]
+        parinti = {nod_producator: (sursa, '+')}
+        vizitat = {sursa, nod_producator}
+        dest_gasita = False
+        
+        # Daca sursa nu poate da in producator, trecem peste
+        rand_sursa = df[(df['Start (x_i)'] == sursa) & (df['Destinație (x_j)'] == nod_producator)].iloc[0]
+        if rand_sursa['Flux f(u)'] >= rand_sursa['Capacitate c(u)']:
+            continue
+            
+        while coada and not dest_gasita:
+            curent = coada.pop(0)
+            arce = df[(df['Start (x_i)'] == curent) & (df['Flux f(u)'] < df['Capacitate c(u)'])]
+            for _, rand in arce.iterrows():
+                vecin = rand['Destinație (x_j)']
+                if vecin not in vizitat:
+                    vizitat.add(vecin)
+                    parinti[vecin] = (curent, '+')
+                    coada.append(vecin)
+                    if vecin == dest: 
+                        dest_gasita = True
+                        break
+                        
+        # Daca gasim un drum curat pe ramura asta, bagam fluxul min
+        if dest_gasita:
+            lant =[]
+            nod = dest
+            while nod != sursa:
+                p, sens = parinti[nod]
+                lant.append((p, nod, sens))
+                nod = p
+            lant.reverse()
+            
+            # Calculam minimul pe drumul asta "din ochi"
+            valori_min = [df[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].iloc[0]['Capacitate c(u)'] - df[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].iloc[0]['Flux f(u)'] for u, v, _ in lant]
+            min_mu = min(valori_min)
+            
+            # Umplem reteaua cu minimul gasit
+            for u, v, _ in lant:
+                idx = df.index[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].tolist()[0]
+                df.at[idx, 'Flux f(u)'] += min_mu
+                istoric_fluxuri[(int(u), int(v))].append(min_mu)
+                
+            phi_total += min_mu
+            paths_I0.append({
+                'mu_idx': mu_idx,
+                'lant': lant,
+                'min_mu': min_mu
+            })
+            mu_idx += 1
+
+    # Salvam istoria pentru pasul I_0
+    istoric.append({
+        'iteratie': 0,
+        'status': 'I0',
+        'paths': paths_I0,
+        'phi_curent': phi_total,
+        'df_stare': df.copy(),
+        'istoric_fluxuri': {k: list(v) for k, v in istoric_fluxuri.items()}
+    })
+
+    # --------------------------------------------------------------------------
+    # FAZA PE: Procedura de Etichetare (restul iteratiilor I_1, I_2...)
+    # --------------------------------------------------------------------------
+    iteratie = 1
     while True:
         culoare_iter = get_random_color() 
-        # Incepem etichetarea de la nodul Sursa
         etichete = {sursa: ("[+]", culoare_iter)}
         parinti = {sursa: (None, None)} 
         coada = [sursa] 
         dest_gasita = False
         
-        # Cautam drum spre destinatie (la fel ca in caiet)
         while coada and not dest_gasita:
             nod_curent = coada.pop(0) 
             
-            # Cautam inainte (arce directe unde mai e loc de flux)
             arce_directe = df[df['Start (x_i)'] == nod_curent].sort_values(by='Destinație (x_j)')
             for _, rand in arce_directe.iterrows():
                 vecin = rand['Destinație (x_j)']
@@ -210,7 +255,6 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
                         
             if dest_gasita: break
             
-            # Cautam inapoi (arce inverse unde putem scadea flux)
             arce_inverse = df[df['Destinație (x_j)'] == nod_curent].sort_values(by='Start (x_i)')
             for _, rand in arce_inverse.iterrows():
                 vecin = rand['Start (x_i)']
@@ -221,7 +265,6 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
                     coada.append(vecin)
                     if vecin == dest: dest_gasita = True; break
 
-        # Daca n-am ajuns la sfarsit, dam stop la algoritm
         if not dest_gasita:
             istoric.append({
                 'iteratie': 'STOP', 'status': 'STOP', 'etichete': etichete, 
@@ -230,7 +273,6 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
             })
             break
             
-        # Refacem drumul pe care l-am gasit
         lant =[]
         curent = dest
         while curent != sursa:
@@ -239,7 +281,6 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
             curent = parinte
         lant.reverse() 
         
-        # Vedem cat putem aduna minim pe traseul gasit
         valori_min_mu =[]
         formule_min_mu =[]
         for u, v, sens in lant:
@@ -254,10 +295,8 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
                 valori_min_mu.append(rezerva)
                 formule_min_mu.append(f"f(x_{int(u)}, x_{int(v)}) = {fmt(rezerva)}")
                 
-        # Minimul pe drum
         min_mu_curent = min(valori_min_mu)
         
-        # Pompam minimul gasit pe sagetile din drum
         for u, v, sens in lant:
             idx = df.index[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].tolist()[0]
             if sens == '+': 
@@ -270,7 +309,6 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
         phi_prec = phi_total
         phi_total += min_mu_curent
         
-        # Salvam starea ca s-o afisam mai incolo in site
         istoric.append({
             'iteratie': iteratie, 
             'mu_idx': mu_idx,
@@ -287,15 +325,13 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
         
         iteratie += 1
         mu_idx += 1
-        if iteratie > 50: break # Safety stop sa nu ne crape browserul
+        if iteratie > 50: break 
         
     return istoric, df, istoric_fluxuri
 
 # ==============================================================================
-# APLICATIA VIZUALA EFFECTIVA (Ce vede omul pe ecran, formatat CU DIACRITICE)
+# APLICATIA VIZUALA (INTERFATA)
 # ==============================================================================
-
-# Antet
 st.markdown('''
     <div class="title-box">
         <p class="title-text">Paradigma "Too Big to Fail"</p>
@@ -309,7 +345,6 @@ st.markdown('''
     </div>
 ''', unsafe_allow_html=True)
 
-# Explicatia basic pentru toata lumea
 st.markdown("### 🧠 Pe scurt, ce am făcut în acest proiect:")
 st.markdown("""
 <div class="info-box">
@@ -323,7 +358,6 @@ Am combinat o problemă clasică de matematică cu Inteligența Artificială.<br
 </div>
 """, unsafe_allow_html=True)
 
-# Pasul 1 din aplicatie
 st.markdown("### Componenta Predictivă (Machine Learning)")
 st.write("Modelul AI a calculat că pentru anul 2026 vom avea nevoile de mai jos pe cele 5 piețe mari:")
 
@@ -339,7 +373,6 @@ col_ml5.metric("Piața SA ($x_8$)", f"{predictii_cerere[4]} unități")
 
 st.info(f"**Cerere Totală Previzionată (2026):** {cerere_totala} unități. Algoritmul Ford-Fulkerson va încerca să o satisfacă.")
 
-# Pasul 2 din aplicatie
 st.markdown("### Generarea Modelului Degenerat (Simularea Crizei)")
 st.write("Aici putem regla capacitatea de producție a fabricilor. Jucați-vă cu sliderele! Trageți de slider-ul NVIDIA mult în jos ca să vedeți cum pică piața.")
 
@@ -348,7 +381,6 @@ with col_s1: cap_nvidia = st.slider("Capacitate NVIDIA ($x_1$)", min_value=0, ma
 with col_s2: cap_amd = st.slider("Capacitate AMD ($x_2$)", min_value=0, max_value=100, value=40, step=5)
 with col_s3: cap_intel = st.slider("Capacitate Intel ($x_3$)", min_value=0, max_value=100, value=20, step=5)
 
-# Matricea cu arce a retelei
 date_retea = [
     [0, 1, cap_nvidia], [0, 2, cap_amd], [0, 3, cap_intel],
     [1, 4, 150], [1, 5, 100], [1, 6, 200], [1, 7, 50], [1, 8, 50],
@@ -367,7 +399,6 @@ st.markdown("#### Cum arată rețeaua înainte de a porni algoritmul")
 istoric_initial = {(int(r['Start (x_i)']), int(r['Destinație (x_j)'])):[] for _, r in df_retea.iterrows()}
 st.graphviz_chart(deseneaza_graf_ecosistem(df_retea, istoric_initial, is_initial=True), use_container_width=True)
 
-# Pasul 3 (Butonul care face treaba matematica)
 if st.button("Execută Ford-Fulkerson pas cu pas", type="primary", use_container_width=True):
     istoric, df_final, flux_final = executa_ford_fulkerson(df_retea, sursa=0, dest=9)
     flux_maxim = istoric[-1]['phi_curent']
@@ -375,10 +406,31 @@ if st.button("Execută Ford-Fulkerson pas cu pas", type="primary", use_container
     st.divider()
     st.markdown("### Rezolvarea Analitică Matematică")
     
-    # Afisam toate calculele pe care le-am facut in backend, sa se vada procedura
     for pas in istoric:
-        if pas['status'] == 'CONTINUA':
-            with st.expander(f"Iterația $\mathcal{{I}}_{{{pas['iteratie']}}}$ - Procedura de Etichetare", expanded=False):
+        
+        # Aici este I_0 adaugat special pentru voi!
+        if pas['status'] == 'I0':
+            with st.expander("Iterația $\mathcal{I}_0$ - Determinarea fluxului inițial din ochi (margine, mijloc, margine)", expanded=True):
+                st.write("Așa cum am învățat la seminar, determinăm fluxul inițial $\\varphi_0$ prin găsirea directă a celor 3 rute (NVIDIA, AMD, Intel):")
+                sum_str =[]
+                for p in pas['paths']:
+                    lant_str = f"x_0"
+                    for u, v, sens in p['lant']:
+                        lant_str += r" \xrightarrow{+} x_{" + str(int(v)) + "}"
+                    
+                    st.latex(r"\mu_{" + str(p['mu_idx']) + r"} = [" + lant_str + r"] \implies \min(\mu_{" + str(p['mu_idx']) + r"}) = " + fmt(p['min_mu']))
+                    sum_str.append(fmt(p['min_mu']))
+                
+                if sum_str:
+                    st.latex(r"\varphi_0 = " + " + ".join(sum_str) + " = " + fmt(pas['phi_curent']))
+                else:
+                    st.latex(r"\varphi_0 = 0 \text{ (Toate căile sunt blocate)}")
+                    
+                st.graphviz_chart(deseneaza_graf_ecosistem(pas['df_stare'], pas['istoric_fluxuri'], is_initial=False), use_container_width=True)
+
+        # Aici e Procedura de Etichetare normala (I1, I2, etc)
+        elif pas['status'] == 'CONTINUA':
+            with st.expander(f"Iterația $\mathcal{{I}}_{{{pas['iteratie']}}}$ - Procedura de Etichetare (PE)", expanded=False):
                 str_etichete = ", ".join([f"x_{{{int(n)}}}: \text{{{lbl[0]}}}" for n, lbl in pas['etichete'].items()])
                 st.latex(r"\{ " + str_etichete + r" \}")
                 
@@ -403,7 +455,6 @@ if st.button("Execută Ford-Fulkerson pas cu pas", type="primary", use_container
                 st.latex(r"\{ " + str_etichete + r" \}")
                 st.warning(f"**Testul de Optimalitate $TO(\mathcal{{I}}_{{STOP}})$**: Procedura a dat greș, nu mai poate ajunge la Destinație. Algoritmul s-a oprit la $\\varphi_{{max}} = {fmt(pas['phi_curent'])}$.")
 
-    # Final - Afisam concluzia daca e criza sau nu
     st.divider()
     st.markdown("### Analiza și Concluzia Finală")
     

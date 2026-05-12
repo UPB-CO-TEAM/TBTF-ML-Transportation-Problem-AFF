@@ -108,12 +108,12 @@ def deseneaza_graf_ecosistem(arce_df, istoric_fluxuri, is_initial=False, bottlen
     graf = graphviz.Digraph()
     graf.attr(rankdir='LR', bgcolor='transparent') # Deseneaza de la stanga la dreapta
     
-    # Dam nume nodurilor ca sa nu fie doar cifre goale
+    # Dam nume nodurilor pe interfata (AICI PUNEM DIACRITICE)
     nume_noduri = {
-        0: "Sursa (x_0)",
+        0: "Sursă (x_0)",
         1: "NVIDIA (x_1)", 2: "AMD (x_2)", 3: "Intel (x_3)",
-        4: "Piata NA (x_4)", 5: "Piata EU (x_5)", 6: "Piata APAC (x_6)", 7: "Piata ME (x_7)", 8: "Piata SA (x_8)",
-        9: "Destinatie (x_9)"
+        4: "Piața NA (x_4)", 5: "Piața EU (x_5)", 6: "Piața APAC (x_6)", 7: "Piața ME (x_7)", 8: "Piața SA (x_8)",
+        9: "Destinație (x_9)"
     }
     
     # Fortam nodurile sa stea pe aceeasi coloana verticala
@@ -151,7 +151,7 @@ def deseneaza_graf_ecosistem(arce_df, istoric_fluxuri, is_initial=False, bottlen
     # Desenam sagetile
     for _, rand in arce_df.iterrows():
         i = int(rand['Start (x_i)'])
-        j = int(rand['Destinatie (x_j)'])
+        j = int(rand['Destinație (x_j)'])
         c_ij = rand['Capacitate c(u)']
         f_ij = rand['Flux f(u)'] if 'Flux f(u)' in rand else 0
         
@@ -178,7 +178,7 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
     df['Flux f(u)'] = 0 # Flux initial e 0
     istoric =[] # Aici salvam printscreen-uri mentale cu fiecare pas
     
-    istoric_fluxuri = {(int(r['Start (x_i)']), int(r['Destinatie (x_j)'])):[] for _, r in df.iterrows()}
+    istoric_fluxuri = {(int(r['Start (x_i)']), int(r['Destinație (x_j)'])):[] for _, r in df.iterrows()}
     
     phi_total = 0 
     mu_idx = 1 # Numarul drumului curent
@@ -198,9 +198,9 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
             nod_curent = coada.pop(0) 
             
             # Cautam inainte (arce directe unde mai e loc de flux)
-            arce_directe = df[df['Start (x_i)'] == nod_curent].sort_values(by='Destinatie (x_j)')
+            arce_directe = df[df['Start (x_i)'] == nod_curent].sort_values(by='Destinație (x_j)')
             for _, rand in arce_directe.iterrows():
-                vecin = rand['Destinatie (x_j)']
+                vecin = rand['Destinație (x_j)']
                 flux, cap = rand['Flux f(u)'], rand['Capacitate c(u)']
                 if vecin not in etichete and flux < cap:
                     etichete[vecin] = (f"[+x_{int(nod_curent)}]", culoare_iter)
@@ -211,7 +211,7 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
             if dest_gasita: break
             
             # Cautam inapoi (arce inverse unde putem scadea flux)
-            arce_inverse = df[df['Destinatie (x_j)'] == nod_curent].sort_values(by='Start (x_i)')
+            arce_inverse = df[df['Destinație (x_j)'] == nod_curent].sort_values(by='Start (x_i)')
             for _, rand in arce_inverse.iterrows():
                 vecin = rand['Start (x_i)']
                 flux = rand['Flux f(u)']
@@ -244,12 +244,12 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
         formule_min_mu =[]
         for u, v, sens in lant:
             if sens == '+': 
-                rand = df[(df['Start (x_i)'] == u) & (df['Destinatie (x_j)'] == v)].iloc[0]
+                rand = df[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].iloc[0]
                 rezerva = rand['Capacitate c(u)'] - rand['Flux f(u)']
                 valori_min_mu.append(rezerva)
                 formule_min_mu.append(f"c(x_{int(u)}, x_{int(v)}) - f = {fmt(rezerva)}")
             else: 
-                rand = df[(df['Start (x_i)'] == u) & (df['Destinatie (x_j)'] == v)].iloc[0]
+                rand = df[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].iloc[0]
                 rezerva = rand['Flux f(u)']
                 valori_min_mu.append(rezerva)
                 formule_min_mu.append(f"f(x_{int(u)}, x_{int(v)}) = {fmt(rezerva)}")
@@ -259,7 +259,7 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
         
         # Pompam minimul gasit pe sagetile din drum
         for u, v, sens in lant:
-            idx = df.index[(df['Start (x_i)'] == u) & (df['Destinatie (x_j)'] == v)].tolist()[0]
+            idx = df.index[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].tolist()[0]
             if sens == '+': 
                 df.at[idx, 'Flux f(u)'] += min_mu_curent
                 istoric_fluxuri[(int(u), int(v))].append(min_mu_curent)
@@ -292,56 +292,56 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
     return istoric, df, istoric_fluxuri
 
 # ==============================================================================
-# APLICATIA VIZUALA EFFECTIVA (Ce vede omul pe ecran)
+# APLICATIA VIZUALA EFFECTIVA (Ce vede omul pe ecran, formatat CU DIACRITICE)
 # ==============================================================================
 
 # Antet
 st.markdown('''
     <div class="title-box">
         <p class="title-text">Paradigma "Too Big to Fail"</p>
-        <p class="subtitle-text">Analiza Structurala si Dependenta Tehnologica in Ecosistemul GPU</p>
+        <p class="subtitle-text">Analiza Structurală și Dependența Tehnologică în Ecosistemul GPU</p>
     </div>
     
     <div class="authors-box">
-        <div class="authors-title">Facultatea de Stiinte Aplicate</div>
+        <div class="authors-title">Facultatea de Științe Aplicate</div>
         <div><b>Coordonator:</b> Lect. Dr. Simona Mihaela BIBIC</div>
-        <div><b>Membrii echipei:</b> Andreea Mihaela DUMITRESCU, Anisoara-Nicoleta DEDU, Daria-Gabriela ILIESCU, Ionela-Diana LUNGU</div>
+        <div><b>Membrii echipei:</b> Andreea Mihaela DUMITRESCU, Anișoara-Nicoleta DEDU, Daria-Gabriela ILIESCU, Ionela-Diana LUNGU</div>
     </div>
 ''', unsafe_allow_html=True)
 
 # Explicatia basic pentru toata lumea
-st.markdown("### 🧠 Pe scurt, ce am facut in acest proiect:")
+st.markdown("### 🧠 Pe scurt, ce am făcut în acest proiect:")
 st.markdown("""
 <div class="info-box">
-Am combinat o problema clasica de matematica cu Inteligenta Artificiala.<br><br>
-<b>1.</b> Am folosit ML (algoritmul Random Forest) ca sa prezicem ce cerere de cipuri va fi in anul 2026.<br>
-<b>2.</b> Am bagat aceste numere intr-o retea de transport (un graf matematic).<br>
-<b>3.</b> Am aplicat algoritmul Ford-Fulkerson sa vedem daca piata poate onora aceasta cerere.<br>
-<b>4.</b> Am demonstrat matematic ca, daca NVIDIA pica (ii scadem capacitatea), restul concurentei nu poate compensa, iar reteaua se blocheaza. Asta confirma ca NVIDIA e o entitate de tip <i>Too Big to Fail</i>.<br><br>
+Am combinat o problemă clasică de matematică cu Inteligența Artificială.<br><br>
+<b>1.</b> Am folosit ML (algoritmul Random Forest) ca să prezicem ce cerere de cipuri va fi în anul 2026.<br>
+<b>2.</b> Am introdus aceste numere într-o rețea de transport (un graf matematic).<br>
+<b>3.</b> Am aplicat algoritmul Ford-Fulkerson să vedem dacă piața poate onora această cerere.<br>
+<b>4.</b> Am demonstrat matematic că, dacă NVIDIA pică (îi scădem capacitatea), restul concurenței nu poate compensa, iar rețeaua se blochează. Asta confirmă că NVIDIA e o entitate de tip <i>Too Big to Fail</i>.<br><br>
 <b>Ce este Random Forest?</b><br>
-In loc sa incerce sa ghiceasca el singur, algoritmul asta creeaza practic 100 de "experti" diferiti (arbori de decizie) care analizeaza trecutul, dupa care face media parerilor lor ca sa fie super precis.
+În loc să încerce să ghicească el singur, algoritmul ăsta creează practic 100 de "experți" diferiți (arbori de decizie) care analizează trecutul, după care face media părerilor lor ca să fie super precis.
 </div>
 """, unsafe_allow_html=True)
 
 # Pasul 1 din aplicatie
-st.markdown("### Componenta Predictiva (Machine Learning)")
-st.write("Modelul AI a calculat ca pentru anul 2026 vom avea nevoile de mai jos pe cele 5 piete mari:")
+st.markdown("### Componenta Predictivă (Machine Learning)")
+st.write("Modelul AI a calculat că pentru anul 2026 vom avea nevoile de mai jos pe cele 5 piețe mari:")
 
 predictii_cerere = antreneaza_model_ml()
 cerere_totala = sum(predictii_cerere)
 
 col_ml1, col_ml2, col_ml3, col_ml4, col_ml5 = st.columns(5)
-col_ml1.metric("Piata NA ($x_4$)", f"{predictii_cerere[0]} unitati")
-col_ml2.metric("Piata EU ($x_5$)", f"{predictii_cerere[1]} unitati")
-col_ml3.metric("Piata APAC ($x_6$)", f"{predictii_cerere[2]} unitati")
-col_ml4.metric("Piata ME ($x_7$)", f"{predictii_cerere[3]} unitati")
-col_ml5.metric("Piata SA ($x_8$)", f"{predictii_cerere[4]} unitati")
+col_ml1.metric("Piața NA ($x_4$)", f"{predictii_cerere[0]} unități")
+col_ml2.metric("Piața EU ($x_5$)", f"{predictii_cerere[1]} unități")
+col_ml3.metric("Piața APAC ($x_6$)", f"{predictii_cerere[2]} unități")
+col_ml4.metric("Piața ME ($x_7$)", f"{predictii_cerere[3]} unități")
+col_ml5.metric("Piața SA ($x_8$)", f"{predictii_cerere[4]} unități")
 
-st.info(f"**Cerere Totala Previzionata (2026):** {cerere_totala} unitati. Algoritmul Ford-Fulkerson va incerca sa o satisfaca.")
+st.info(f"**Cerere Totală Previzionată (2026):** {cerere_totala} unități. Algoritmul Ford-Fulkerson va încerca să o satisfacă.")
 
 # Pasul 2 din aplicatie
 st.markdown("### Generarea Modelului Degenerat (Simularea Crizei)")
-st.write("Aici putem regla capacitatea de productie a fabricilor. Jucati-va cu sliderele! Trageti de slider-ul NVIDIA mult in jos ca sa vedeti cum pica piata.")
+st.write("Aici putem regla capacitatea de producție a fabricilor. Jucați-vă cu sliderele! Trageți de slider-ul NVIDIA mult în jos ca să vedeți cum pică piața.")
 
 col_s1, col_s2, col_s3 = st.columns(3)
 with col_s1: cap_nvidia = st.slider("Capacitate NVIDIA ($x_1$)", min_value=0, max_value=300, value=80, step=10)
@@ -361,24 +361,24 @@ date_retea = [
     [8, 9, predictii_cerere[4]]
 ]
 
-df_retea = pd.DataFrame(date_retea, columns=["Start (x_i)", "Destinatie (x_j)", "Capacitate c(u)"])
+df_retea = pd.DataFrame(date_retea, columns=["Start (x_i)", "Destinație (x_j)", "Capacitate c(u)"])
 
-st.markdown("#### Cum arata reteaua inainte de a porni algoritmul")
-istoric_initial = {(int(r['Start (x_i)']), int(r['Destinatie (x_j)'])):[] for _, r in df_retea.iterrows()}
+st.markdown("#### Cum arată rețeaua înainte de a porni algoritmul")
+istoric_initial = {(int(r['Start (x_i)']), int(r['Destinație (x_j)'])):[] for _, r in df_retea.iterrows()}
 st.graphviz_chart(deseneaza_graf_ecosistem(df_retea, istoric_initial, is_initial=True), use_container_width=True)
 
 # Pasul 3 (Butonul care face treaba matematica)
-if st.button("Executa Ford-Fulkerson pas cu pas", type="primary", use_container_width=True):
+if st.button("Execută Ford-Fulkerson pas cu pas", type="primary", use_container_width=True):
     istoric, df_final, flux_final = executa_ford_fulkerson(df_retea, sursa=0, dest=9)
     flux_maxim = istoric[-1]['phi_curent']
     
     st.divider()
-    st.markdown("### Rezolvarea Analitica Matematica")
+    st.markdown("### Rezolvarea Analitică Matematică")
     
     # Afisam toate calculele pe care le-am facut in backend, sa se vada procedura
     for pas in istoric:
         if pas['status'] == 'CONTINUA':
-            with st.expander(f"Iteratia $\mathcal{{I}}_{{{pas['iteratie']}}}$ - Procedura de Etichetare", expanded=False):
+            with st.expander(f"Iterația $\mathcal{{I}}_{{{pas['iteratie']}}}$ - Procedura de Etichetare", expanded=False):
                 str_etichete = ", ".join([f"x_{{{int(n)}}}: \text{{{lbl[0]}}}" for n, lbl in pas['etichete'].items()])
                 st.latex(r"\{ " + str_etichete + r" \}")
                 
@@ -398,28 +398,28 @@ if st.button("Executa Ford-Fulkerson pas cu pas", type="primary", use_container_
                 st.graphviz_chart(deseneaza_graf_ecosistem(pas['df_stare'], pas['istoric_fluxuri'], etichete_noduri=pas['etichete'], lant_curent=pas['lant']), use_container_width=True)
                 
         else:
-            with st.expander(f"Iteratia $\mathcal{{I}}_{{STOP}}$", expanded=True):
+            with st.expander(f"Iterația $\mathcal{{I}}_{{STOP}}$", expanded=True):
                 str_etichete = ", ".join([f"x_{{{int(n)}}}: \text{{{lbl[0]}}}" for n, lbl in pas['etichete'].items()])
                 st.latex(r"\{ " + str_etichete + r" \}")
-                st.warning(f"**Testul de Optimalitate $TO(\mathcal{{I}}_{{STOP}})$**: Procedura a dat gres, nu mai poate ajunge la Destinatie. Algoritmul s-a oprit la $\\varphi_{{max}} = {fmt(pas['phi_curent'])}$.")
+                st.warning(f"**Testul de Optimalitate $TO(\mathcal{{I}}_{{STOP}})$**: Procedura a dat greș, nu mai poate ajunge la Destinație. Algoritmul s-a oprit la $\\varphi_{{max}} = {fmt(pas['phi_curent'])}$.")
 
     # Final - Afisam concluzia daca e criza sau nu
     st.divider()
-    st.markdown("### Analiza si Concluzia Finala")
+    st.markdown("### Analiza și Concluzia Finală")
     
     deficit = cerere_totala - flux_maxim
     
     col_r1, col_r2, col_r3 = st.columns(3)
-    col_r1.metric("Cerere Globala (Calculata cu ML)", f"{cerere_totala}")
+    col_r1.metric("Cerere Globală (Calculată cu ML)", f"{cerere_totala}")
     col_r2.metric("Flux Maxim Livrat (Ford-Fulkerson)", f"{flux_maxim}")
     
     if deficit > 0:
-        col_r3.metric("Deficit Neacoperit", f"{deficit}", delta="- Criza!", delta_color="inverse")
+        col_r3.metric("Deficit Neacoperit", f"{deficit}", delta="- Criză!", delta_color="inverse")
     else:
         col_r3.metric("Deficit Neacoperit", "0", delta="Totul e bine", delta_color="normal")
 
     st.markdown("#### Graful Final (Identificarea Bottleneck-ului)")
-    st.write("Sagetile rosii arata pe unde s-a blocat reteaua (capacitatea e la maxim).")
+    st.write("Săgețile roșii arată pe unde s-a blocat rețeaua (capacitatea e la maxim).")
     
     st.graphviz_chart(deseneaza_graf_ecosistem(df_final, flux_final, is_initial=False, bottleneck_nodes=True), use_container_width=True)
     
@@ -427,8 +427,8 @@ if st.button("Executa Ford-Fulkerson pas cu pas", type="primary", use_container_
         st.markdown(f"""
         <div class='validation-box'>
             <b>Am demonstrat conceptul de "Too Big to Fail":</b><br>
-            Din cauza faptului ca NVIDIA nu a putut livra, toata reteaua s-a prabusit. Chiar daca am incercat sa impinger flux pe la concurenta, muchiile spre AMD si Intel s-au blocat instantaneu. Dovedim astfel in mod matematic ca piata actuala este absolut dependenta de un singur nod!
+            Din cauza faptului că NVIDIA nu a putut livra, toată rețeaua s-a prăbușit. Chiar dacă am încercat să împingem flux pe la concurență, muchiile spre AMD și Intel s-au blocat instantaneu. Dovedim astfel în mod matematic că piața actuală este absolut dependentă de un singur nod!
         </div>
         """, unsafe_allow_html=True)
     else:
-        st.success("**Echilibru!** Oferta bate cererea, nu avem nicio problema pe piata momentan.")
+        st.success("**Echilibru!** Oferta bate cererea, nu avem nicio problemă pe piață momentan.")

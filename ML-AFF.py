@@ -1,6 +1,6 @@
 # ==============================================================================
 # PE SCURT CE AM FACUT AICI:
-# 1. Am folosit Machine Learning sa ghicim cererea in 2026.
+# 1. Am folosit Machine Learning sa ghicim cererea in 2026 pe regiuni.
 # 2. Am pus datele in graful de transport.
 # 3. Aplicam Ford-Fulkerson incepand cu Iteratia 0 (fluxul initial pe cele 3 ramuri majore).
 # 4. Continuam cu Procedura de Etichetare (PE) pentru iteratiile 1, 2, etc.
@@ -96,10 +96,11 @@ def deseneaza_graf_ecosistem(arce_df, istoric_fluxuri, is_initial=False, bottlen
     graf = graphviz.Digraph()
     graf.attr(rankdir='LR', bgcolor='transparent') 
     
+    # Explicam clar pietele pe nodurile grafului
     nume_noduri = {
         0: "Sursă (x_0)",
         1: "NVIDIA (x_1)", 2: "AMD (x_2)", 3: "Intel (x_3)",
-        4: "Piața NA (x_4)", 5: "Piața EU (x_5)", 6: "Piața APAC (x_6)", 7: "Piața ME (x_7)", 8: "Piața SA (x_8)",
+        4: "NA (Am. Nord, x_4)", 5: "EU (Europa, x_5)", 6: "APAC (Asia-Pac., x_6)", 7: "ME (Or. Mijl., x_7)", 8: "SA (Am. Sud, x_8)",
         9: "Destinație (x_9)"
     }
     
@@ -126,8 +127,10 @@ def deseneaza_graf_ecosistem(arce_df, istoric_fluxuri, is_initial=False, bottlen
             
     muchii_lant = set()
     if lant_curent:
-        for u, v, _ in lant_curent:
-            muchii_lant.add((int(u), int(v)))
+        for u, v, sens in lant_curent:
+            # Tine minte atat drumurile directe cat si cele inverse pentru afisarea cu albastru
+            if sens == '+': muchii_lant.add((int(u), int(v)))
+            else: muchii_lant.add((int(v), int(u)))
 
     for _, rand in arce_df.iterrows():
         i = int(rand['Start (x_i)'])
@@ -280,6 +283,7 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
             curent = parinte
         lant.reverse() 
         
+        # AICI A FOST EROAREA CORECtATA (gestionarea corecta a nodurilor pentru sens '-')
         valori_min_mu =[]
         formule_min_mu =[]
         for u, v, sens in lant:
@@ -289,21 +293,22 @@ def executa_ford_fulkerson(df_arce, sursa, dest):
                 valori_min_mu.append(rezerva)
                 formule_min_mu.append(f"c(x_{int(u)}, x_{int(v)}) - f = {fmt(rezerva)}")
             else: 
-                rand = df[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].iloc[0]
+                rand = df[(df['Start (x_i)'] == v) & (df['Destinație (x_j)'] == u)].iloc[0]
                 rezerva = rand['Flux f(u)']
                 valori_min_mu.append(rezerva)
-                formule_min_mu.append(f"f(x_{int(u)}, x_{int(v)}) = {fmt(rezerva)}")
+                formule_min_mu.append(f"f(x_{int(v)}, x_{int(u)}) = {fmt(rezerva)}")
                 
         min_mu_curent = min(valori_min_mu)
         
         for u, v, sens in lant:
-            idx = df.index[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].tolist()[0]
             if sens == '+': 
+                idx = df.index[(df['Start (x_i)'] == u) & (df['Destinație (x_j)'] == v)].tolist()[0]
                 df.at[idx, 'Flux f(u)'] += min_mu_curent
                 istoric_fluxuri[(int(u), int(v))].append(min_mu_curent)
             else: 
+                idx = df.index[(df['Start (x_i)'] == v) & (df['Destinație (x_j)'] == u)].tolist()[0]
                 df.at[idx, 'Flux f(u)'] -= min_mu_curent
-                istoric_fluxuri[(int(u), int(v))].append(-min_mu_curent)
+                istoric_fluxuri[(int(v), int(u))].append(-min_mu_curent)
                 
         phi_prec = phi_total
         phi_total += min_mu_curent
@@ -358,17 +363,17 @@ Acest model ansamblează deciziile a numeroși arbori de regresie independenți 
 """, unsafe_allow_html=True)
 
 st.markdown("### 1. Componenta Predictivă (Machine Learning)")
-st.write("Modelul algoritmic a generat următoarele previziuni privind cererea de componente GPU pentru anul 2026, distribuite pe cele 5 piețe globale majore:")
+st.write("Modelul algoritmic a generat următoarele previziuni privind cererea de componente GPU pentru anul 2026, distribuite pe cele 5 macro-regiuni economice: America de Nord (NA), Europa (EU), Asia-Pacific (APAC), Orientul Mijlociu (ME) și America de Sud (SA):")
 
 predictii_cerere = antreneaza_model_ml()
 cerere_totala = sum(predictii_cerere)
 
 col_ml1, col_ml2, col_ml3, col_ml4, col_ml5 = st.columns(5)
-col_ml1.metric("Piața NA ($x_4$)", f"{predictii_cerere[0]} unități")
-col_ml2.metric("Piața EU ($x_5$)", f"{predictii_cerere[1]} unități")
-col_ml3.metric("Piața APAC ($x_6$)", f"{predictii_cerere[2]} unități")
-col_ml4.metric("Piața ME ($x_7$)", f"{predictii_cerere[3]} unități")
-col_ml5.metric("Piața SA ($x_8$)", f"{predictii_cerere[4]} unități")
+col_ml1.metric("NA (Am. de Nord) - $x_4$", f"{predictii_cerere[0]} unități")
+col_ml2.metric("EU (Europa) - $x_5$", f"{predictii_cerere[1]} unități")
+col_ml3.metric("APAC (Asia-Pac.) - $x_6$", f"{predictii_cerere[2]} unități")
+col_ml4.metric("ME (Or. Mijlociu) - $x_7$", f"{predictii_cerere[3]} unități")
+col_ml5.metric("SA (Am. de Sud) - $x_8$", f"{predictii_cerere[4]} unități")
 
 st.info(f"**Cerere Totală Previzionată (2026):** {cerere_totala} unități de calcul. Această valoare reprezintă ținta de flux pe care algoritmul Ford-Fulkerson va încerca să o optimizeze în cadrul rețelei.")
 

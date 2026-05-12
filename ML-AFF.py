@@ -1,4 +1,4 @@
-\# ==============================================================================
+# ==============================================================================
 # PE SCURT CE AM FACUT AICI:
 # 1. Am folosit Machine Learning sa ghicim cererea in 2026.
 # 2. Am pus datele in graful de transport.

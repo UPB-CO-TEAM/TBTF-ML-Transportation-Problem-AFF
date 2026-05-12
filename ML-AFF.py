@@ -344,8 +344,8 @@ st.markdown('''
     
     <div class="authors-box">
         <div class="authors-title">Facultatea de Științe Aplicate</div>
+        <div><b>Membrii echipei:</b> Andreea-Mihaela DUMITRESCU, Anișoara-Nicoleta DEDU, Daria-Gabriela ILIESCU, Ionela-Diana LUNGU</div>
         <div><b>Coordonator:</b> Lect. Dr. Simona Mihaela BIBIC</div>
-        <div><b>Membrii echipei:</b> Andreea Mihaela DUMITRESCU, Anișoara-Nicoleta DEDU, Daria-Gabriela ILIESCU, Ionela-Diana LUNGU</div>
     </div>
 ''', unsafe_allow_html=True)
 

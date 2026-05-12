@@ -4,13 +4,16 @@ Mai jos este prezentată schema logică a modului în care componenta de Machine
 
 ```mermaid
 graph TD
-    %% Definirea stilurilor pentru un aspect academic si profesional
-    classDef ML fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef Retea fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
-    classDef Algoritm fill:#fff3e0,stroke:#e65100,stroke-width:2px;
-    classDef Decizie fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
-    classDef Criza fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#c62828,font-weight:bold;
-    classDef Echilibru fill:#f1f8e9,stroke:#33691e,stroke-width:2px,color:#33691e,font-weight:bold;
+    %% Definirea stilurilor cu text negru fortat pentru vizibilitate maxima pe GitHub
+    classDef ML fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000000;
+    classDef Retea fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000000;
+    classDef Algoritm fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000000;
+    classDef Decizie fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#000000;
+    classDef Criza fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#900000,font-weight:bold;
+    classDef Echilibru fill:#f1f8e9,stroke:#33691e,stroke-width:2px,color:#1b5e20,font-weight:bold;
+
+    %% Fortam textul de pe sageti sa fie si el negru si vizibil
+    linkStyle default color:#000000, stroke:#777777, stroke-width:2px;
 
     %% Faza 1: Machine Learning
     A[Date Istorice: Evoluția pieței GPU]:::ML --> B(Antrenare Model: Random Forest):::ML

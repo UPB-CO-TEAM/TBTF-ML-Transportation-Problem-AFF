@@ -1,1 +1,2 @@
 graphviz
+pip install scikit-learn

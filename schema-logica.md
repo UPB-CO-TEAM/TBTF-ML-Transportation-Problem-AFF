@@ -1,3 +1,8 @@
+## Schema Logică a Arhitecturii Hibride
+
+Mai jos este prezentată schema logică a modului în care componenta de Machine Learning (Predictivă) se integrează cu algoritmul matematic Ford-Fulkerson (Optimizare) pentru a simula și demonstra paradigma *Too Big to Fail*.
+
+```mermaid
 graph TD
     %% Definirea stilurilor pentru un aspect academic si profesional
     classDef ML fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
@@ -30,3 +35,4 @@ graph TD
     I --> J{Flux Maxim Livrat <br> < <br> Cererea Previzionată?}:::Decizie
     J -- Da --> K[Deficit Structural: Criză Sistemică <br><br> Validare TBTF: NVIDIA este <br> Single Point of Failure]:::Criza
     J -- Nu --> L[Fără Deficit: <br> Echilibru Sustenabil al pieței]:::Echilibru
+```

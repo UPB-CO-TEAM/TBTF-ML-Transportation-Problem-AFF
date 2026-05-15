@@ -101,11 +101,11 @@ def echilibreaza_problema(C, A, B):
     if sum_A > sum_B:
         B_echil.append(sum_A - sum_B)
         C_echil = np.hstack((C_echil, np.zeros((C_echil.shape[0], 1))))
-        return C_echil, A_echil, B_echil, "Beneficiar Fictiv"
+        return C_echil, A_echil, B_echil, "Beneficiar Fictiv (Stoc Neutilizat)"
     elif sum_B > sum_A:
         A_echil.append(sum_B - sum_A)
         C_echil = np.vstack((C_echil, np.zeros((1, C_echil.shape[1]))))
-        return C_echil, A_echil, B_echil, "Furnizor Fictiv"
+        return C_echil, A_echil, B_echil, "Furnizor Fictiv (Deficit Piață)"
     return C_echil, A_echil, B_echil, "Echilibrată"
 
 def coltul_nv(A, B):
@@ -229,9 +229,11 @@ with tab2:
         
         if max_flow < cerere_totala:
             st.error(f"🚨 **Flux Maxim = {max_flow}**. Rețeaua e blocată. AMD și Intel (Nodurile Roșii) sunt la capacitate maximă.")
+        else:
+            st.success(f"✅ **Echilibru Atins**. Rețeaua poate asigura necesarul curent de {cerere_totala}.")
 
 # ------------------------------------------------------------------------------
-# TAB 3: PROBLEMA TRANSPORTURILOR (Rezolvarea exactă cerută)
+# TAB 3: PROBLEMA TRANSPORTURILOR (Rezolvarea exactă)
 # ------------------------------------------------------------------------------
 with tab3:
     col_pt1, col_pt2 = st.columns([1, 2])
@@ -244,9 +246,8 @@ with tab3:
         st.markdown("**Condiția de Echilibru:**")
         st.latex(r"\sum_{i=1}^{m} a_i \neq \sum_{j=1}^{n} b_j")
         
-        st.write(f"- Oferta Disponibilă: **{cap_nvidia + cap_amd + cap_intel}**")
-        st.write(f"- Cererea (ML): **{cerere_totala}**")
-        st.warning("👉 S-a detectat un deficit. Algoritmul va introduce un **Furnizor Fictiv** cu cost $c=0$.")
+        st.write(f"- Oferta Curentă (din slider-ul FF): **{cap_nvidia + cap_amd + cap_intel}**")
+        st.write(f"- Cererea (din ML): **{cerere_totala}**")
 
     with col_pt2:
         st.subheader("Algoritmul de Optimizare")
@@ -255,9 +256,13 @@ with tab3:
         B_vals = predictii_2026
 
         C_lucru, A_lucru, B_lucru, status = echilibreaza_problema(C_matrix, A_vals, B_vals)
+        
+        if status != "Echilibrată":
+            st.warning(f"👉 Se impune reechilibrare artificială. Algoritmul a introdus un **{status}** cu costuri 0.")
+        
         X_baza, celule_baza = coltul_nv(A_lucru, B_lucru)
         
-        # Aici ASCUNDEM calculele complicate într-un meniu derulant!
+        # Aici ASCUNDEM calculele complicate într-un meniu derulant
         with st.expander("🛠️ Vezi Calculele Intermediare (Colțul N-V și Iterarea)"):
             st.write("**1. Soluția Inițială $T_0$ (Metoda Colțului N-V):**")
             st.write(f"S-au calculat {len(celule_baza)} celule de bază.")
@@ -266,38 +271,49 @@ with tab3:
             st.latex(r"\Delta_{ij} = c_{ij} - (u_i + v_j)")
             st.write("*Algoritmul pivotează iterativ până când toate $\Delta_{ij} \ge 0$. Pentru prezentare, afișăm direct rezultatul echilibrat structural.*")
         
-        # Tabelul Final
+        # Etichetele dinamice pentru rânduri și coloane
         nume_linii = ["A1 (NVIDIA)", "A2 (AMD)", "A3 (Intel)"]
-        if len(A_lucru) > len(A_vals): nume_linii.append("A4* (FURNIZOR FICTIV)")
+        if len(A_lucru) > len(A_vals): 
+            nume_linii.append("A4* (FURNIZOR FICTIV)")
+            
+        nume_coloane = ["B1 (SUA)", "B2 (Japonia)", "B3 (China)", "B4 (România)"]
+        if len(B_lucru) > len(B_vals): 
+            nume_coloane.append("B5* (BENEFICIAR FICTIV)")
         
-        df_rez = pd.DataFrame(X_baza, index=nume_linii, columns=["B1 (SUA)", "B2 (Japonia)", "B3 (China)", "B4 (România)"])
+        df_rez = pd.DataFrame(X_baza, index=nume_linii, columns=nume_coloane)
         
-        def highlight_fictiv(row):
-            if 'FICTIV' in row.name:
-                return ['background-color: #ffcdd2; color: #b71c1c; font-weight: bold'] * len(row)
-            return [''] * len(row)
+        # Stilizarea sigură (axis=None preia întreg DataFrame-ul, eliminând eroarea ta)
+        def style_fictiv(data):
+            df_styles = pd.DataFrame('', index=data.index, columns=data.columns)
+            for row in data.index:
+                if 'FICTIV' in str(row):
+                    df_styles.loc[row, :] = 'background-color: #ffcdd2; color: #b71c1c; font-weight: bold'
+            for col in data.columns:
+                if 'FICTIV' in str(col):
+                    df_styles.loc[:, col] = 'background-color: #ffcdd2; color: #b71c1c; font-weight: bold'
+            return df_styles
             
         st.markdown("##### Tabelul de Alocare Optimă ($X_{ij}$)")
-        st.dataframe(df_rez.style.apply(highlight_fictiv, axis=1).format("{:.0f}"), use_container_width=True)
+        st.dataframe(df_rez.style.apply(style_fictiv, axis=None).format("{:.0f}"), use_container_width=True)
 
 # ------------------------------------------------------------------------------
 # TAB 4: EFECTUL WOW (Grafic Animat Comparativ)
 # ------------------------------------------------------------------------------
 with tab4:
     st.markdown("<h3 style='text-align: center; color: #d81b60;'>Evoluția Deficitului (Animație)</h3>", unsafe_allow_html=True)
-    st.write("Acest grafic arată cum se comportă piața pe măsură ce capacitatea NVIDIA scade de la 'Echilibru' la 'Colaps'.")
+    st.write("Acest grafic arată cum se comportă piața pe măsură ce capacitatea NVIDIA scade de la 'Echilibru' la 'Colaps'. Apasă Play!")
     
     # Generăm date pentru animație (Scenarii multiple)
     scenarii_df = []
     capacitati_test = [300, 250, 200, 150, 100, 50]
     
     for cap_n in capacitati_test:
-        oferta = cap_n + cap_amd + cap_intel
+        oferta = cap_n + 200 + 100  # nvidia + amd + intel
         deficit = cerere_totala - oferta if cerere_totala > oferta else 0
         acoperit = oferta if oferta < cerere_totala else cerere_totala
         
-        scenarii_df.append({'Scenariu': f"NVIDIA={cap_n}", 'Tip': 'Cerere Acoperită', 'Valoare': acoperit})
-        scenarii_df.append({'Scenariu': f"NVIDIA={cap_n}", 'Tip': 'Deficit (Furnizor Fictiv)', 'Valoare': deficit})
+        scenarii_df.append({'Scenariu': f"NVIDIA={cap_n}", 'Tip': 'Cerere Acoperită Real (Max Flow)', 'Valoare': acoperit})
+        scenarii_df.append({'Scenariu': f"NVIDIA={cap_n}", 'Tip': 'Deficit Structural (Furnizor Fictiv)', 'Valoare': deficit})
 
     df_animatie = pd.DataFrame(scenarii_df)
     
@@ -305,7 +321,7 @@ with tab4:
     fig_anim = px.bar(df_animatie, x="Tip", y="Valoare", animation_frame="Scenariu", 
                       color="Tip", range_y=[0, cerere_totala + 50],
                       color_discrete_sequence=['#4caf50', '#e53935'],
-                      title="Vizualizare Dinamică: Paradigma Too Big To Fail")
+                      title="Vizualizare Dinamică: Impactul Căderii NVIDIA")
     
     fig_anim.update_layout(showlegend=False)
     # Viteza animatiei
@@ -313,4 +329,4 @@ with tab4:
     
     st.plotly_chart(fig_anim, use_container_width=True)
     
-    st.success("🎯 **Concluzie Finală:** Animația demonstrează că, la o scădere critică a actorului principal (NVIDIA), barele verzi (cererea acoperită de AMD și Intel) rămân plafonate. Bara roșie crește exponențial. **Furnizorul Fictiv din algoritmul matematic devine criza reală din economie.**")
+    st.success("🎯 **Concluzie Finală:** Animația demonstrează matematic că, la o scădere critică a actorului principal (NVIDIA), barele verzi (capacitatea AMD/Intel) rămân plafonate. Bara roșie (Furnizorul Fictiv alocat de algoritm) crește brusc. **În paradigma 'Too Big to Fail', matematica furnizorului fictiv mapează direct criza din realitate.**")

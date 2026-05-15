@@ -7,72 +7,40 @@ from sklearn.ensemble import RandomForestRegressor
 import graphviz
 
 # ==============================================================================
-# CONFIGURARE PAGINĂ & DESIGN CSS ACADEMIC
+# 0. CONFIGURARE PAGINĂ & DESIGN ACADEMIC
 # ==============================================================================
-st.set_page_config(page_title="Paradigma TBTF - Simulare Hibridă", layout="wide", page_icon="🏛️")
+st.set_page_config(page_title="Paradigma TBTF", layout="wide", page_icon="🎓")
 
 st.markdown("""
     <style>
-    /* Temă vizuală: Academic, curat, accente roz-pastel și verde-mentă */
-    .title-box { background: linear-gradient(135deg, #fce4ec 0%, #e0f2f1 100%); border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 30px; border-bottom: 4px solid #d81b60; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .main-title { color: #880e4f; font-size: 42px; font-weight: 900; margin: 0; font-family: 'Segoe UI', sans-serif; letter-spacing: -0.5px;}
-    .sub-title { color: #444; font-size: 18px; margin-top: 10px; font-weight: 400; }
-    
-    .pipeline-container { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px 30px; border-radius: 50px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; border: 1px solid #eee; }
-    .pipeline-step { text-align: center; font-weight: bold; font-size: 16px; color: #9e9e9e; }
-    .pipeline-step.active { color: #d81b60; }
-    .pipeline-arrow { color: #bdbdbd; font-size: 24px; font-weight: bold; }
-    
-    .math-card { background: #fafafa; border-left: 5px solid #00897b; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-    .math-title { color: #00695c; font-weight: bold; font-size: 18px; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+    .title-box { background: linear-gradient(135deg, #e8f5e9 0%, #fce4ec 100%); border-radius: 10px; padding: 25px; text-align: center; margin-bottom: 25px; border-bottom: 4px solid #4caf50; }
+    .main-title { color: #2e7d32; font-size: 38px; font-weight: 900; margin: 0; font-family: 'Segoe UI', sans-serif;}
+    .sub-title { color: #555; font-size: 18px; margin-top: 5px; font-style: italic; }
+    .step-box { background-color: #f8f9fa; border-left: 5px solid #ff007f; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
+    .highlight { color: #d81b60; font-weight: bold; }
     </style>
 """, unsafe_allow_html=True)
 
-# ==============================================================================
-# HEADER
-# ==============================================================================
 st.markdown('''
     <div class="title-box">
-        <p class="main-title">Paradigma "Too Big to Fail" în Ecosistemul Tehnologic</p>
-        <p class="sub-title">Modelare Hibridă: <b>Machine Learning</b> ➔ <b>Flux Maxim (Grafuri)</b> ➔ <b>Optimizare (Metoda MODI)</b></p>
+        <p class="main-title">Paradigma "Too Big to Fail" în Ecosistemul GPU</p>
+        <p class="sub-title">Modelare Matematică: Machine Learning ➔ Ford-Fulkerson ➔ Algoritmul PTE</p>
     </div>
 ''', unsafe_allow_html=True)
 
 # ==============================================================================
-# PIPELINE VIZUAL
-# ==============================================================================
-def render_pipeline(active_step):
-    steps = [
-        ("1. Previziune Cerere (ML)", 1), 
-        ("➔", 0),
-        ("2. Test Capacitate (Grafuri)", 2),
-        ("➔", 0),
-        ("3. Optimizare Cost/Deficit (PTE)", 3)
-    ]
-    html = "<div class='pipeline-container'>"
-    for text, step_num in steps:
-        if step_num == 0:
-            html += f"<div class='pipeline-arrow'>{text}</div>"
-        else:
-            active_class = "active" if step_num == active_step else ""
-            html += f"<div class='pipeline-step {active_class}'>{text}</div>"
-    html += "</div>"
-    st.markdown(html, unsafe_allow_html=True)
-
-# ==============================================================================
-# ALGORITMI BACKEND
+# FUNCȚII ALGORITMICE (Backend)
 # ==============================================================================
 @st.cache_data
-def genereaza_date_ml():
-    np.random.seed(42)
+def genereaza_ml_data():
     ani = np.arange(2018, 2026)
     baza = np.exp((ani - 2018) * 0.35) * 10
     df = pd.DataFrame({
         'An': ani,
-        'NA': np.round(baza * 1.5 + np.random.normal(0, 3, 8)).astype(int),
-        'EU': np.round(baza * 1.0 + np.random.normal(0, 2, 8)).astype(int),
-        'APAC': np.round(baza * 2.0 + np.random.normal(0, 4, 8)).astype(int),
-        'ROW': np.round(baza * 0.5 + np.random.normal(0, 1, 8)).astype(int),
+        'SUA': np.round(baza * 1.5 + np.random.normal(0, 3, 8)).astype(int),
+        'Japonia': np.round(baza * 1.0 + np.random.normal(0, 2, 8)).astype(int),
+        'China': np.round(baza * 2.0 + np.random.normal(0, 4, 8)).astype(int),
+        'România': np.round(baza * 0.5 + np.random.normal(0, 1, 8)).astype(int),
     })
     return df
 
@@ -133,81 +101,84 @@ def coltul_nv(A, B):
         else: j += 1
     return X
 
-# Inițializare date
-df_istoric = genereaza_date_ml()
+# Inițializare Date ML
+df_istoric = genereaza_ml_data()
 X_ml = df_istoric[['An']][:-1]
 predictii_2026 = []
-for col in ['NA', 'EU', 'APAC', 'ROW']:
+for col in ['SUA', 'Japonia', 'China', 'România']:
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X_ml, df_istoric[col][:-1])
     predictii_2026.append(int(model.predict([[2026]])[0]))
 cerere_totala = sum(predictii_2026)
 
 # ==============================================================================
-# TAB-URILE APLICAȚIEI
+# PIPELINE VIZUAL (NAVIGARE)
 # ==============================================================================
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Pas 1: ML", "🕸️ Pas 2: Grafuri FF", "🚛 Pas 3: Transporturi", "🏆 Concluzie: TBTF Dashboard"])
+st.markdown("""
+<div style='display: flex; justify-content: space-around; background: #eee; padding: 10px; border-radius: 10px; font-weight: bold; color: #555; margin-bottom: 20px;'>
+    <span>1. Machine Learning ➔</span>
+    <span>2. Analiză AFF $G=(X,U)$ ➔</span>
+    <span>3. Algoritmul PTE (Optimizare)</span>
+</div>
+""", unsafe_allow_html=True)
+
+tab1, tab2, tab3 = st.tabs(["🤖 1. Vectorul Cererii (ML)", "🌊 2. Blocaje Structurale (AFF)", "🚛 3. Modelul de Echilibru (PTE)"])
 
 # ------------------------------------------------------------------------------
 # TAB 1: MACHINE LEARNING
 # ------------------------------------------------------------------------------
 with tab1:
-    render_pipeline(1)
+    st.header("1. Determinarea Vectorului de Destinație $B_j$")
+    col1, col2 = st.columns([1, 1.5])
     
-    col_ml1, col_ml2 = st.columns([1.2, 2])
-    with col_ml1:
+    with col1:
         st.markdown('''
-        <div class="math-card">
-            <div class="math-title">1. Formularea Matematică a Cererii</div>
-            <b>Obiectiv:</b> Generarea vectorului cererii $B = (b_1, b_2, \dots, b_n)$ pentru a parametriza modelele de optimizare.<br><br>
-            Deoarece datele brute sunt confidențiale, simulăm o creștere exponențială (Legea lui Moore) perturbată de un <b>zgomot stochastic Gaussian</b>:
+        <div class="step-box">
+        <b>Scop:</b> Calcularea cererii viitoare pentru a avea date de intrare corecte în rețeaua de transport.<br>
+        <b>Model:</b> Random Forest Regressor.<br>
+        <b>Vectorul Destinațiilor:</b> $B = (b_1, b_2, b_3, b_4)$
         </div>
         ''', unsafe_allow_html=True)
-        st.latex(r"D_t^{(regiune)} = \beta \cdot e^{\alpha(t - t_0)} + \epsilon")
-        st.latex(r"\text{unde } \epsilon \sim \mathcal{N}(0, \sigma^2)")
+        st.latex(r"D(t) = \beta \cdot e^{\alpha(t)} + \epsilon \quad ; \quad \epsilon \sim \mathcal{N}(0, \sigma^2)")
         
-        st.markdown("""
-        **Metodologie:**
-        * Extragem setul istoric (2018-2025).
-        * Antrenăm un algoritm de tip **Random Forest** (100 de estimatori decizionali) pentru a capta neliniaritățile.
-        * Extrapolăm anul 2026 pentru a determina cererea viitoare.
-        """)
-        
-    with col_ml2:
-        df_melt = df_istoric.melt(id_vars=['An'], value_vars=['NA', 'EU', 'APAC', 'ROW'])
+        st.write("Rezultat ML pentru anul 2026:")
+        for i, (tara, val) in enumerate(zip(['SUA', 'Japonia', 'China', 'România'], predictii_2026)):
+            st.markdown(f"- $b_{i+1}$ (**{tara}**): {val} unități")
+        st.info(f"**$\Sigma b_j = {cerere_totala}$ unități cerute la nivel global.**")
+
+    with col2:
+        df_melt = df_istoric.melt(id_vars=['An'], value_vars=['SUA', 'Japonia', 'China', 'România'])
         fig_ml = px.line(df_melt, x='An', y='value', color='variable', markers=True, 
-                 title="Evoluția și Proiecția Cererii de GPU (Random Forest)",
-                 color_discrete_sequence=['#d81b60', '#00897b', '#fb8c00', '#1e88e5'])
-        fig_ml.add_vrect(x0=2024.5, x1=2026.5, fillcolor="#fce4ec", opacity=0.5, line_width=0, annotation_text="Previziune ML (2026)")
-        fig_ml.update_layout(plot_bgcolor='white', hovermode="x unified")
+                            title="Previziunea Cererii (2018 - 2026)",
+                            color_discrete_sequence=['#d81b60', '#4caf50', '#ff9800', '#1e88e5'])
+        fig_ml.add_vrect(x0=2024.5, x1=2026.5, fillcolor="#fce4ec", opacity=0.5, line_width=0, annotation_text="Previziune 2026")
         st.plotly_chart(fig_ml, use_container_width=True)
-        
-    st.success(f"**Output Pas 1:** Modelul ML a generat un necesar global calculat la suma $B_j$ = **{cerere_totala}** unități pentru anul 2026. Transmitem acest output algoritmului de Grafuri.")
 
 # ------------------------------------------------------------------------------
-# TAB 2: TEORIA GRAFURILOR (FORD-FULKERSON)
+# TAB 2: FORD-FULKERSON (AFF) - Slide 18, 20, 21
 # ------------------------------------------------------------------------------
 with tab2:
-    render_pipeline(2)
+    st.header("2. Analiza de Rețea Logistică $G=(X,U)$")
     
-    col_ff1, col_ff2 = st.columns([1.5, 2])
+    col_ff1, col_ff2 = st.columns([1.2, 2])
     with col_ff1:
         st.markdown('''
-        <div class="math-card">
-            <div class="math-title">2. Teorema Fluxului Maxim (Min-Cut)</div>
-            Testăm capacitatea rețelei de a susține cererea generată de ML.
+        <div class="step-box">
+        <b>Obiectiv:</b> Evaluăm dacă oferta $a_i$ poate satisface cererea $\Sigma b_j$ prezisă de ML.<br>
+        <b>Validare:</b> Determinarea fluxului maxim într-un graf rețea.
         </div>
         ''', unsafe_allow_html=True)
-        st.latex(r"\text{Conservare: } \sum_{v \in V} f(u,v) = 0 \quad \forall u \neq S, D")
-        st.latex(r"\text{Capacitate: } f(u,v) \le c(u,v)")
         
-        st.write("🔧 **Simulator de Șoc (Paradigma TBTF):**")
-        st.write("Reduceți capacitatea NVIDIA pentru a simula un colaps structural.")
-        cap_nvidia = st.slider("Capacitate NVIDIA ($x_1$)", 20, 150, 40, step=10)
-        cap_amd, cap_intel = 60, 40
-
+        st.latex(r"\text{Teorema fluxului maxim: } v(f) = c(T)")
+        st.write("*unde cantitatea $v(f)$ este limitată real de blocajele structurale $c(T)$.*")
+        
+        st.markdown("---")
+        st.write("🔧 **Premisa Scenariului (Too Big To Fail):**")
+        st.write("Simulăm scăderea capacității NVIDIA de la 300 la 100 unități. Urmăriți efectul pe graf.")
+        cap_nvidia = st.slider("Capacitate $a_1$ (NVIDIA)", 50, 300, 100, step=10)
+        cap_amd, cap_intel = 200, 100
+        
     with col_ff2:
-        # Construire Graf
         num_nodes = 9
         graph_ff = [[0]*num_nodes for _ in range(num_nodes)]
         graph_ff[0][1], graph_ff[0][2], graph_ff[0][3] = cap_nvidia, cap_amd, cap_intel
@@ -217,126 +188,88 @@ with tab2:
 
         max_flow, min_cut_visited, res_graph = ford_fulkerson(graph_ff, 0, 8)
         
-        # Desenare vizuală
         dot = graphviz.Digraph(engine='dot')
         dot.attr(rankdir='LR', bgcolor='transparent')
-        dot.node('0', 'Sursă', style='filled', fillcolor='#e0f2f1', shape='box')
-        dot.node('8', f'Destinație\nNecesar ML: {cerere_totala}', style='filled', fillcolor='#e0f2f1', shape='box')
+        dot.node('0', 'Sursă', style='filled', fillcolor='#e8f5e9')
+        dot.node('8', f'Destinație\nNecesar: {cerere_totala}', style='filled', fillcolor='#e8f5e9')
         
         for idx, (nume, cap) in {1: ("NVIDIA", cap_nvidia), 2: ("AMD", cap_amd), 3: ("Intel", cap_intel)}.items():
-            color = '#ffcdd2' if min_cut_visited[0] and not min_cut_visited[idx] else '#ffffff'
-            if max_flow < cerere_totala and idx in [2, 3]: color = '#ef5350' # Bottleneck
-            dot.node(str(idx), f"{nume}\nCap: {cap}", style='filled', fillcolor=color)
-            dot.edge('0', str(idx), label=f" {graph_ff[0][idx] - res_graph[0][idx]} / {cap} ", color="red" if color == '#ef5350' else "black", penwidth="2" if color == '#ef5350' else "1")
+            # Condiție Tăietură Minimă (Bottleneck)
+            is_bottleneck = (max_flow < cerere_totala and idx in [2, 3] and (graph_ff[0][idx] - res_graph[0][idx]) == cap)
+            color = '#ffcdd2' if is_bottleneck else '#ffffff'
+            
+            dot.node(str(idx), f"{nume}\n$a_{idx}$ = {cap}", style='filled', fillcolor=color)
+            dot.edge('0', str(idx), label=f"{graph_ff[0][idx] - res_graph[0][idx]}/{cap}", color="red" if is_bottleneck else "black", penwidth="2" if is_bottleneck else "1")
         
-        for idx_reg, nume_reg in zip([4, 5, 6, 7], ['NA', 'EU', 'APAC', 'ROW']):
+        for idx_reg, nume_reg in zip([4, 5, 6, 7], ['SUA', 'Japonia', 'China', 'România']):
             dot.node(str(idx_reg), nume_reg, style='filled', fillcolor='#ffffff')
-            dot.edge(str(idx_reg), '8', label=f" Cerere: {predictii_2026[idx_reg-4]} ")
+            dot.edge(str(idx_reg), '8', label=f"{predictii_2026[idx_reg-4]}")
             for p in [1, 2, 3]:
                 f_edge = graph_ff[p][idx_reg] - res_graph[p][idx_reg]
-                if f_edge > 0: dot.edge(str(p), str(idx_reg), label=str(f_edge), color="#999")
+                if f_edge > 0: dot.edge(str(p), str(idx_reg), label=str(f_edge), color="#aaa")
 
         st.graphviz_chart(dot, use_container_width=True)
         
         if max_flow < cerere_totala:
-            st.error(f"🚨 **Tăietură Minimă Detectată!** Rețeaua s-a gâtuit. Arcele AMD și Intel au atins capacitatea maximă ($f = c$). Flux curent: {max_flow}. Deficit: {cerere_totala - max_flow}.")
+            st.error(f"🚨 **WARNING: Blocaje structurale detectate!** Fluxul a atins saturația la $v(f) = {max_flow}$. Deficit global: {cerere_totala - max_flow}. Am demonstrat prăbușirea rețelei. Trecem la Algoritmul PTE pentru a echilibra matematic și a aloca eficient marfa rămasă.")
 
 # ------------------------------------------------------------------------------
-# TAB 3: PROBLEMA TRANSPORTURILOR
+# TAB 3: PROBLEMA TRANSPORTURILOR (PTE) - Slide 8, 9, 10, 11
 # ------------------------------------------------------------------------------
 with tab3:
-    render_pipeline(3)
+    st.header("3. Algoritmul PTE (Rezolvarea Deficitului)")
     
-    col_pt1, col_pt2 = st.columns([1, 2])
+    col_pt1, col_pt2 = st.columns([1.2, 2])
     with col_pt1:
         st.markdown('''
-        <div class="math-card">
-            <div class="math-title">3. Optimizarea și Furnizorul Fictiv</div>
-            În situația de criză demonstrată de Graf, trebuie să optimizăm costul de transport ($Z$) pentru unitățile disponibile.
+        <div class="step-box">
+        <b>Formularea matematică (Pseudocod):</b><br>
+        Obiectiv: Minimizarea costului total de transport pe baza deciziilor $x_{ij}$.
         </div>
         ''', unsafe_allow_html=True)
-        st.latex(r"\min Z = \sum_{i=1}^{m} \sum_{j=1}^{n} c_{ij} x_{ij}")
-        st.markdown("""
-        **Constrângere matematică:**
-        Algoritmul cere echilibru perfect ($\Sigma a_i = \Sigma b_j$). 
-        Deoarece oferta este mai mică, sistemul matematic adaugă automat un **Furnizor Fictiv**.
-        """)
+        st.latex(r"\min F(x) = \sum_{i=1}^{m} \sum_{j=1}^{n} c_{ij} x_{ij}")
+        st.write("Restricții:")
+        st.latex(r"1) \sum x_{ij} \le a_i \quad (\text{oferta nu este depășită})")
+        st.latex(r"2) \sum x_{ij} \ge b_j \quad (\text{cererea satisfăcută})")
+        st.latex(r"3) \ x_{ij} \ge 0")
+        
+        st.markdown("---")
+        st.markdown("**Condiția de Echilibru:**")
+        st.latex(r"\sum a_i \neq \sum b_j \Rightarrow \text{Dezechilibru}")
+        st.write(f"$\Sigma a_i = {cap_nvidia + cap_amd + cap_intel}$ | $\Sigma b_j = {cerere_totala}$")
+        st.warning("👉 Necesită echilibrare artificială înainte de aplicarea algoritmului: **Introducerea Furnizorului Fictiv** ($a_4^*$) cu costuri $c_{4j} = 0$.")
 
     with col_pt2:
+        st.write("### Algoritmul de Optimizare (Pipeline în 3 pași)")
+        st.markdown("""
+        * **PAS 1:** Soluția inițială $\to$ *Metoda Colțului Nord-Vest* (Afișată în tabelul de mai jos).
+        * **PAS 2:** Testul optimum $\to$ *Algoritmul MODI (Potențiale)*: $\Delta_{ij} = c_{ij} - (u_i + v_j)$. Dacă Toate $\Delta \ge 0 \to optim$.
+        * **PAS 3:** Pivotare $\to$ *Circuit cu semne alternante $(+/-)$* unde $\Gamma_{ij} < 0$.
+        """)
+        
         C_matrix = np.array([[2, 3, 1, 4], [3, 2, 4, 3], [1, 4, 3, 2]])
         A_vals = [cap_nvidia, cap_amd, cap_intel]
         B_vals = predictii_2026
 
-        # Echilibrare
         sum_A, sum_B = sum(A_vals), sum(B_vals)
         A_echil = list(A_vals)
-        C_echil = C_matrix
         if sum_B > sum_A:
             A_echil.append(sum_B - sum_A)
-            C_echil = np.vstack((C_echil, np.zeros((1, C_matrix.shape[1]))))
             
+        # PAS 1: Rulăm Colțul Nord-Vest pentru afișare
         X_baza = coltul_nv(A_echil, B_vals)
         
-        # Tabel cu stilizare direct din Pandas HTML pentru a evita eroarea de matplotlib
-        nume_linii = ["NVIDIA (A1)", "AMD (A2)", "Intel (A3)"]
-        if len(A_echil) > len(A_vals): nume_linii.append("🚨 FURNIZOR FICTIV (DEFICIT)")
+        nume_linii = ["A1 (NVIDIA)", "A2 (AMD)", "A3 (Intel)"]
+        if len(A_echil) > len(A_vals): nume_linii.append("A4* (FURNIZOR FICTIV)")
         
-        df_rezultat = pd.DataFrame(X_baza, index=nume_linii, columns=["NA (B1)", "EU (B2)", "APAC (B3)", "ROW (B4)"])
+        df_rez = pd.DataFrame(X_baza, index=nume_linii, columns=["B1 (SUA)", "B2 (Japonia)", "B3 (China)", "B4 (România)"])
         
-        # Funcție de stilizare nativă (fără camp)
-        def color_fictiv(row):
-            return ['background-color: #ffcdd2; color: #b71c1c; font-weight: bold' if 'FICTIV' in str(row.name) else 'background-color: #f1f8e9' for _ in row]
+        def highlight_fictiv(row):
+            if 'FICTIV' in row.name:
+                return ['background-color: #ffcdd2; color: #b71c1c; font-weight: bold'] * len(row)
+            return [''] * len(row)
+            
+        st.write("**Tabel Alocare $X_{ij}$ (după Echilibrare și Pasul 1):**")
+        st.dataframe(df_rez.style.apply(highlight_fictiv, axis=1).format("{:.0f}"), use_container_width=True)
         
-        st.dataframe(df_rezultat.style.apply(color_fictiv, axis=1).format("{:.0f}"), use_container_width=True)
-        
-        st.info("💡 **Interpretare:** Rândul colorat cu roșu reprezintă localizarea matematică a deficitului. Acestea sunt regiunile care vor rămâne fără componente.")
-
-# ------------------------------------------------------------------------------
-# TAB 4: CONCLUZIE (EFECTUL WOW - DASHBOARD COMPARATIV)
-# ------------------------------------------------------------------------------
-with tab4:
-    st.markdown("<h2 style='text-align:center; color:#880e4f;'>Analiză Comparativă: Paradigma TBTF Demonstrată</h2>", unsafe_allow_html=True)
-    st.markdown("---")
-    
-    col_d1, col_d2 = st.columns(2)
-    
-    with col_d1:
-        st.markdown("#### Profil de Reziliență (Spider Chart)")
-        st.write("Comparăm efortul de susținere a rețelei înainte și după șocul sistemic.")
-        
-        # Spider chart cu Plotly
-        fig_radar = go.Figure()
-        fig_radar.add_trace(go.Scatterpolar(
-            r=[150, 60, 40], theta=['NVIDIA', 'AMD', 'Intel'],
-            fill='toself', name='Situația Ideală', line_color='#00897b'
-        ))
-        fig_radar.add_trace(go.Scatterpolar(
-            r=[cap_nvidia, cap_amd, cap_intel], theta=['NVIDIA', 'AMD', 'Intel'],
-            fill='toself', name='Situația de Colaps', line_color='#d81b60'
-        ))
-        fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 160])), showlegend=True, margin=dict(t=30, b=30))
-        st.plotly_chart(fig_radar, use_container_width=True)
-
-    with col_d2:
-        st.markdown("#### Analiza Deficitului Global")
-        st.write("Evidențierea grafică a eșecului structural al rețelei concurente.")
-        
-        # Bar chart
-        labels = ['Cerere Globală (ML)', 'Acoperit Real', 'Pierdere Structurală (Deficit)']
-        values = [cerere_totala, max_flow, cerere_totala - max_flow if cerere_totala > max_flow else 0]
-        colors = ['#1e88e5', '#00897b', '#e53935']
-        
-        fig_bar = go.Figure(data=[go.Bar(x=labels, y=values, marker_color=colors, text=values, textposition='auto')])
-        fig_bar.update_layout(plot_bgcolor='white', margin=dict(t=30, b=30))
-        st.plotly_chart(fig_bar, use_container_width=True)
-
-    st.markdown("""
-    <div style="background-color: #fff3e0; padding: 20px; border-left: 5px solid #ff9800; border-radius: 5px;">
-    <h4>Concluzii Științifice:</h4>
-    <ul>
-        <li><b>Validarea Ipotezei:</b> Trecerea datelor prin pipeline-ul hibrid (ML → Grafuri FF → PTE) validează matematic imposibilitatea pieței de a suplini gigantul NVIDIA.</li>
-        <li><b>Limite Structurale:</b> Deși AMD și Intel operează la 100% din capacitate (Tăietura Minimă), deficitul rețelei rămâne sever.</li>
-        <li><b>Rezolvare Matematică:</b> Introducerea conceptului de <i>Furnizor Fictiv</i> în algoritmul de optimizare ne-a permis nu doar să evităm blocajul ecuației de echilibru, ci să cartografiem exact unde va lovi criza la nivel geografic.</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)
+        st.success("✅ **Concluzie (Rezultat Echilibrare):** Rândul roșu din tabelul PTE demonstrează cantitatea pe care rețeaua fizică nu a putut să o livreze. Faptul că acest Furnizor Fictiv este obligatoriu matematic dovedește paradigma **Too Big To Fail**.")

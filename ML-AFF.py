@@ -905,8 +905,8 @@ with tab4:
         height=420, template="plotly_white",
         title="Cost (PTE) și flux fizic (FF) în funcție de capacitatea NVIDIA",
         xaxis_title="Capacitate NVIDIA (u.p.)",
-        yaxis=dict(title="Cost optim f* (u.m.)", titlefont=dict(color=PINK), tickfont=dict(color=PINK)),
-        yaxis2=dict(title="Flux maxim v(φ) (u.p.)", titlefont=dict(color=GREEN),
+        yaxis=dict(title=dict(text="Cost optim f* (u.m.)", font=dict(color=PINK)), tickfont=dict(color=PINK)),
+        yaxis2=dict(title=dict(text="Flux maxim v(φ) (u.p.)", font=dict(color=GREEN)),
                    tickfont=dict(color=GREEN), overlaying="y", side="right"),
         legend=dict(orientation="h", yanchor="bottom", y=-0.25, x=0.1),
     )

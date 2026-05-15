@@ -175,9 +175,9 @@ with tab1:
         
     with col_ml2:
         df_melt = df_istoric.melt(id_vars=['An'], value_vars=['NA', 'EU', 'APAC', 'ROW'])
-        fig_ml = px.scatter(df_melt, x='An', y='value', color='variable', trendline="lowess", 
-                            title="Proiecția Neliniară a Cererii de GPU (Random Forest)",
-                            color_discrete_sequence=['#d81b60', '#00897b', '#fb8c00', '#1e88e5'])
+        fig_ml = px.line(df_melt, x='An', y='value', color='variable', markers=True, 
+                 title="Evoluția și Proiecția Cererii de GPU (Random Forest)",
+                 color_discrete_sequence=['#d81b60', '#00897b', '#fb8c00', '#1e88e5'])
         fig_ml.add_vrect(x0=2024.5, x1=2026.5, fillcolor="#fce4ec", opacity=0.5, line_width=0, annotation_text="Previziune ML (2026)")
         fig_ml.update_layout(plot_bgcolor='white', hovermode="x unified")
         st.plotly_chart(fig_ml, use_container_width=True)

@@ -1,5 +1,6 @@
 streamlit
-pandas
 numpy
-graphviz
+pandas
+plotly
 scikit-learn
+graphviz

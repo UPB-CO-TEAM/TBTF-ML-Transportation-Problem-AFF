@@ -135,7 +135,7 @@ st.markdown(
     {t('Facultatea de Științe Aplicate · Anul III · Grupa 1333a',
        'Faculty of Applied Sciences · Year III · Group 1333a')}
     <div class="authors">
-      <b>{t('Autori', 'Authors')}:</b> Dedu Anișoara-Nicoleta · Dumitrescu Andreea-Mihaela · Iliescu Daria · Lungu Diana-Ionela
+      <b>{t('Autori', 'Authors')}:</b> <b>Anișoara-Nicoleta DEDU</b> · <b>Andreea-Mihaela DUMITRESCU</b> · <b>Daria-Gabriela ILIESCU</b> · <b>Diana-Ionela LUNGU</b>
     </div>
     <div class="coord">
       {t('Coordonator', 'Supervisor')}: Lect. Dr. Simona Mihaela BIBIC
@@ -592,6 +592,31 @@ with tab2:
     col_disp = t("Disponibil", "Supply")
     row_nec = t("Necesar", "Demand")
 
+    def stil_transport(d):
+        s = pd.DataFrame("", index=d.index, columns=d.columns)
+        
+        # Colorare elemente fictive
+        for r in d.index:
+            for c in d.columns:
+                is_fict = ("fictiv" in str(r).lower() or "fictive" in str(r).lower() or
+                           "fictiv" in str(c).lower() or "fictive" in str(c).lower())
+                if is_fict:
+                    s.loc[r, c] = f"background-color:{ORANGE_BG}; color:{ORANGE}; font-weight:600"
+                    
+        # Colorare Disponibil / Necesar peste elementele fictive (daca e cazul)
+        for r in d.index:
+            for c in d.columns:
+                is_nec = (r == row_nec)
+                is_disp = (c == col_disp)
+                
+                if is_nec and is_disp:
+                    s.loc[r, c] = "background-color:#E1BEE7; color:#4A148C; font-weight:900"
+                elif is_nec:
+                    s.loc[r, c] = "background-color:#E8F5E9; color:#1B5E20; font-weight:bold"
+                elif is_disp:
+                    s.loc[r, c] = "background-color:#E3F2FD; color:#0D47A1; font-weight:bold"
+        return s
+
     # Soluție inițială
     X0 = coltul_nord_vest(A_e, B_e)
     f0 = cost_fn(X0, C_e)
@@ -610,7 +635,7 @@ with tab2:
     df_X0.loc[row_nec] = list(B_e) + [sum(A_e)]
     df_X0 = df_X0.astype(int)
 
-    st.dataframe(df_X0, use_container_width=True)
+    st.dataframe(df_X0.style.apply(stil_transport, axis=None), use_container_width=True)
     st.markdown(
         f"""<div class="kpi"><div class="kpi-label">{t('Cost inițial f₀', 'Initial cost f₀')}</div>
         <div class="kpi-value" style="color:{GREY};">{f0:.0f} u.m.</div></div>""",
@@ -620,16 +645,6 @@ with tab2:
     st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
     st.markdown(f"##### {t('b) Soluția optimă (după convergența MODI / Stepping-Stone)', 'b) Optimal solution (after MODI / Stepping-Stone convergence)')}")
 
-    def stil_fictiv(d):
-        s = pd.DataFrame("", index=d.index, columns=d.columns)
-        for r in d.index:
-            if "fictiv" in str(r).lower() or "fictive" in str(r).lower():
-                s.loc[r, :] = f"background-color:{ORANGE_BG}; color:{ORANGE}; font-weight:600"
-        for c in d.columns:
-            if "fictiv" in str(c).lower() or "fictive" in str(c).lower():
-                s.loc[:, c] = f"background-color:{ORANGE_BG}; color:{ORANGE}; font-weight:600"
-        return s
-
     df_Xopt = pd.DataFrame(np.round(X_opt).astype(int), index=lin, columns=col_lbls)
     
     # Adăugare Disponibil & Necesar
@@ -637,7 +652,7 @@ with tab2:
     df_Xopt.loc[row_nec] = list(B_e) + [sum(A_e)]
     df_Xopt = df_Xopt.astype(int)
 
-    st.dataframe(df_Xopt.style.apply(stil_fictiv, axis=None), use_container_width=True)
+    st.dataframe(df_Xopt.style.apply(stil_transport, axis=None), use_container_width=True)
 
     c1, c2 = st.columns(2)
     with c1:
@@ -778,7 +793,7 @@ with tab2:
         title=t("Alocare reală (fără furnizor fictiv) pe piețe",
                 "Real allocation (excluding fictive supplier) by market"),
         xaxis_title=t("Piață", "Market"), yaxis_title="u.p.",
-        legend=dict(orientation="h", yanchor="bottom", y=-0.22, xanchor="center", x=0.5),
+        legend=dict(orientation="v", yanchor="top", y=1, xanchor="left", x=1.02),
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 

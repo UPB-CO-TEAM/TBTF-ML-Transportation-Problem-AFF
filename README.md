@@ -487,13 +487,13 @@ Ford-Fulkerson nu permite această iluzie. Operează exclusiv pe rețeaua fizic�
 
 ### Identitatea cheie
 
-$$\boxed{\underbrace{v(\varphi^*)}_{\text{flux real}} + \underbrace{\sum_j x^*_{m+1,j}}_{\text{volum fictiv}} = \underbrace{\sum_j b_j}_{\text{cererea totală}}}$$
+$$\boxed{\underbrace{v(\varphi^\ast)}_{\text{flux real}} + \underbrace{\sum_j x^\ast_{m+1,j}}_{\text{volum fictiv}} = \underbrace{\sum_j b_j}_{\text{cererea totală}}}$$
 
 Pentru S2: **600 + 400 = 1000** ✓
 
 Sau echivalent:
 
-$$\boxed{\text{Deficit fizic} = \sum_j b_j - v(\varphi^*) = \text{Volum furnizor fictiv}}$$
+$$\boxed{\text{Deficit fizic} = \sum_j b_j - v(\varphi^\ast) = \text{Volum furnizor fictiv}}$$
 
 ### Legătura cu paradigma TBTF
 

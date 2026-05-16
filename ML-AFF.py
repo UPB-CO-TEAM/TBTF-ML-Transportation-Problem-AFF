@@ -588,6 +588,10 @@ with tab2:
     lin = list(FURNIZORI) + ([fictiv_label] if len(A_e) > 3 else [])
     col_lbls = list(REG_DISP) + ([fictiv_label] if len(B_e) > 5 else [])
 
+    # Variabile comune pt margini
+    col_disp = t("Disponibil", "Supply")
+    row_nec = t("Necesar", "Demand")
+
     # Soluție inițială
     X0 = coltul_nord_vest(A_e, B_e)
     f0 = cost_fn(X0, C_e)
@@ -600,6 +604,12 @@ with tab2:
 
     st.markdown(f"##### {t('a) Soluția inițială (Metoda Colțului Nord-Vest)', 'a) Initial solution (NW Corner Method)')}")
     df_X0 = pd.DataFrame(X0.astype(int), index=lin, columns=col_lbls)
+    
+    # Adăugare Disponibil & Necesar
+    df_X0[col_disp] = A_e
+    df_X0.loc[row_nec] = list(B_e) + [sum(A_e)]
+    df_X0 = df_X0.astype(int)
+
     st.dataframe(df_X0, use_container_width=True)
     st.markdown(
         f"""<div class="kpi"><div class="kpi-label">{t('Cost inițial f₀', 'Initial cost f₀')}</div>
@@ -621,6 +631,12 @@ with tab2:
         return s
 
     df_Xopt = pd.DataFrame(np.round(X_opt).astype(int), index=lin, columns=col_lbls)
+    
+    # Adăugare Disponibil & Necesar
+    df_Xopt[col_disp] = A_e
+    df_Xopt.loc[row_nec] = list(B_e) + [sum(A_e)]
+    df_Xopt = df_Xopt.astype(int)
+
     st.dataframe(df_Xopt.style.apply(stil_fictiv, axis=None), use_container_width=True)
 
     c1, c2 = st.columns(2)

@@ -2,15 +2,6 @@
 Paradigma "Too Big to Fail" - Ecosistemul GPU
 Aplicatie de modelare matematica: ML + PTE + Ford-Fulkerson
 
-NOUTĂȚI v2:
-- Toggle bilingv RO/EN cu AI (Claude API opțional, dicționar fallback)
-- Layout aerisit (grafice full-width, nu mai sunt înghesuite)
-- Curbă animată în Tab "Analiza comparativă"
-- Tab nou "Scheme logice" cu flowchart-uri Graphviz
-- Diagrama Ford-Fulkerson îmbunătățită (font mai mare, spațiere)
-- Defensive error handling
-
-Run: streamlit run app_paradigma_tbtf_v2.py
 """
 
 import streamlit as st
@@ -133,7 +124,7 @@ st.markdown(
     <b>{t('Universitatea Națională de Știință și Tehnologie POLITEHNICA București',
            'POLITEHNICA National University of Science and Technology Bucharest')}</b><br>
     {t('Facultatea de Științe Aplicate · Anul III · Grupa 1333a',
-       'Faculty of Applied Sciences · Year III · Group 1333a')}
+       'Faculty of Applied Sciences · Year III · Group 1333')}
     <div class="authors">
       <b>{t('Autori', 'Authors')}:</b> <b>Anișoara-Nicoleta DEDU</b> · <b>Andreea-Mihaela DUMITRESCU</b> · <b>Daria-Gabriela ILIESCU</b> · <b>Diana-Ionela LUNGU</b>
     </div>

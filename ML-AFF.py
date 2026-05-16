@@ -123,7 +123,7 @@ st.markdown(
   <div class="affiliation">
     <b>{t('Universitatea Națională de Știință și Tehnologie POLITEHNICA București',
            'POLITEHNICA National University of Science and Technology Bucharest')}</b><br>
-    {t('Facultatea de Științe Aplicate · Anul III · Grupa 1333a',
+    {t('Facultatea de Științe Aplicate · Anul III · Grupa 1333',
        'Faculty of Applied Sciences · Year III · Group 1333')}
     <div class="authors">
       <b>{t('Autori', 'Authors')}:</b> <b>Anișoara-Nicoleta DEDU</b> · <b>Andreea-Mihaela DUMITRESCU</b> · <b>Daria-Gabriela ILIESCU</b> · <b>Diana-Ionela LUNGU</b>

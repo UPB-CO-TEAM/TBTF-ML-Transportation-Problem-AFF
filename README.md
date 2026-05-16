@@ -26,7 +26,6 @@
 7. [Paradoxul costului aparent](#7-paradoxul-costului-aparent)
 8. [Implementare](#8-implementare)
 9. [Extensii și pipeline scalabil](#9-extensii-și-pipeline-scalabil)
-10. [Referințe](#10-referințe)
 
 ---
 
@@ -616,41 +615,12 @@ Structura matematică este **generică**. Aceeași arhitectură poate fi aplicat
 
 ---
 
-## 10. Referințe
+## Copyright
 
-### Cărți
+© 2026 Universitatea Națională de Știință și Tehnologie POLITEHNICA București (UNSTPB)
+Facultatea de Științe Aplicate
 
-1. **Bertsimas, D. & Tsitsiklis, J.** *Introduction to Linear Optimization*. Athena Scientific, 1997. — Tratamentul modern al PT și algoritmilor de optimizare liniară.
-
-2. **Ahuja, R., Magnanti, T. & Orlin, J.** *Network Flows: Theory, Algorithms, and Applications*. Prentice Hall, 1993. — Referința standard pentru fluxuri în rețele.
-
-3. **Hillier, F. & Lieberman, G.** *Introduction to Operations Research*. McGraw-Hill, 11th ed., 2021. — Capitolele 8-9 pentru PT și fluxuri.
-
-### Articole
-
-4. **Ford, L. R. & Fulkerson, D. R.** „Maximal Flow Through a Network". *Canadian Journal of Mathematics*, 8: 399-404, 1956. — Lucrarea originală.
-
-5. **Dantzig, G. B.** „Application of the Simplex Method to a Transportation Problem". În T. Koopmans (ed.) *Activity Analysis of Production and Allocation*, Wiley, 1951. — Origine PT.
-
-6. **Breiman, L.** „Random Forests". *Machine Learning*, 45(1): 5-32, 2001. — Modelul ML folosit.
-
-### Despre paradigma TBTF
-
-7. **Sorkin, A. R.** *Too Big to Fail*. Viking, 2009. — Originea conceptului în context bancar.
-
-8. **Acharya, V., Pedersen, L., Philippon, T. & Richardson, M.** „Measuring Systemic Risk". *The Review of Financial Studies*, 30(1): 2-47, 2017.
-
-### Despre dependența GPU/AI
-
-9. **Khan, S. & Mann, A.** „AI Chips: What They Are and Why They Matter". *Center for Security and Emerging Technology*, 2020.
-
-10. **IDC / Gartner** — Rapoarte anuale despre piața globală de GPU și accelaratori AI.
-
----
-
-## Licență
-
-Acest proiect este distribuit sub licență MIT. Folosirea materialului în scop educațional și de cercetare este liberă.
+Toate drepturile rezervate. Materialul este proprietatea autorilor și a instituției coordonatoare. Reproducerea sau distribuirea integrală sau parțială fără acordul scris al autorilor este interzisă.
 
 ## Autori
 
